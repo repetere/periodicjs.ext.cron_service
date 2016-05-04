@@ -490,10 +490,6 @@ module.exports = function (resources) {
 		use_full_data: true,
 		extname: 'periodicjs.ext.cron_service'
 	};
-	var log = function (req, res, next) {
-		console.log('got here');
-		next();
-	};
 	cronSettings.override = {
 		create_item: [setCronFilePath, assetController.multiupload, assetController.create_assets_from_files, createCrons],
 		create_index: [cron_create_index],
