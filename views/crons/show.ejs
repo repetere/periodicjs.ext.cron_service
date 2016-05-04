@@ -1,0 +1,49 @@
+<% var genericdoc = cron %>
+<% var genericdocid = cron._id %>
+<% var genericdoctype = 'Cron' /*"User"*/ %>
+<% var genericdoctypename = 'cron' /*"user"*/ %>
+<% var genericdoctypelink = 'cron' /*"user"*/ %>
+<% var genericdoctypeplurallink = 'crons' /*/users"*/ %>
+<% include ../shared/header %>
+<div class="ts-container">
+  <div class="ts-text-container ts-genericdoc">
+    <% include ../shared/genericdoc_compose_title %>
+
+    <div class="ts-row">
+      <div class="ts-col-span12">
+        <div id="refresh-tabs" class="ts-tabs">
+          <nav>
+            <ul class="ts-col-span12 ts-text-center">
+              <li class="ts-col-span3 ts-no-margin">Basic</li>
+              <% if(user.privileges['760'] || user.accounttype==='admin'){%>
+              <li class="ts-col-span3 ts-no-margin">Advanced</li>
+              <%}%>
+            </ul>
+          </nav>
+          <div class="ts-tabs-content">
+            <section class="ts-no-padding">
+				 		<form class="ts-form async-admin-ajax-forms" id="edit-crons-form" name="edit-crons-form" method="post" action="/<%- locals.adminPath %>/content/crons/<%- genericdocid %>?_method=PUT"  onsubmit="return false;" >
+                <div class="ts-row">
+                  <div class="ts-genericdoc-entry ts-col-span4 ts-screensm-col-span12 ts-screenxs-col-span12">
+                    <% include _cron_publish %>
+                  </div>
+                  <div class="ts-genericdoc-entry ts-col-span8 ts-screensm-col-span12 ts-screenxs-col-span12">
+                    <% include _cron_file_content %>
+                  </div>
+                </div>
+              </form>
+            </section>
+            <% if(user.privileges['760'] || user.accounttype==='admin'){%>
+            <section class="ts-no-padding">
+              <% include ../shared/_genericdoc_show_doc %>
+            </section>
+            <%}%>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+	</div>
+</div>
+<% include ../shared/footer %>

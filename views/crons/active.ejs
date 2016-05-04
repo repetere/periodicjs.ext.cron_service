@@ -1,0 +1,39 @@
+<% include ../shared/header %>
+<% ils_nav_section="crons" %>
+<% genericdoctype = "Cron" %>
+<% genericdoccount = crons.length %>
+<% genericdocpages = 1 %>
+<% genericdoctypelink = "crons" %>
+<% genericdoctypeplurallink = "crons" %>
+<% genericdoc_tktouse = "createdat,updatedat,identification.guid,identification.date_of_birth,identification.citizenship,identification.last_name,identification.first_name,identification.salesforce_contact_id,identification.salesforce_contact_id,identification.promise_user_account_id" %>
+<div class="ts-container ts-serif-clean">
+	<div class=" ">
+		<div class="">
+			<span class="ts-text-xx ">Active Crons</span>
+		</div>
+		<div id="sf_contacts" class="sf-table ts-overflow-auto">
+      <div id="ts-contacts-preloading" class="ts-preloading hide-preloading hide"></div>
+    	<div id="sf_list_of_contacts" class="sf-table ts-overflow-auto">
+				<input type="hidden" name="_csrf" value=<%- locals.token %> >
+ 				<%- locals.get_data_table_html({
+					data: crons,
+					data_attributes:locals.pps_display_tables.cron_table.data_attributes,
+					responsive_table :true,
+					responsive_collapse: locals.default_responsive_collapse(locals.pps_display_tables.cron_table.responsive_collapse),
+					responsive_expand:locals.default_responsive_expand(),
+					thead:locals.default_thead(),
+					tbody: locals.pps_display_tables.cron_table.tbody(locals.viewhelper.moment),
+					custom_tfoot: locals.default_custom_tfoot({
+						total:crons.length,
+						count:genericdoccount,
+						pages:genericdocpages,
+						currentlimit:request.query.limit,
+						currentpage:request.query.pagenum,
+						colspan: 9
+					})
+				}) %>
+			</div>
+		</div>
+	</div>
+</div>
+<% include ../shared/footer %>

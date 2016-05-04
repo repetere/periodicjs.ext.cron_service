@@ -1,0 +1,7 @@
+{
+  "development":{
+    "settings":{
+    	"pemfile_path": false
+    }
+  }
+}

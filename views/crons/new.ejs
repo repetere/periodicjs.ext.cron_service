@@ -1,0 +1,63 @@
+<% include ../shared/header %>
+<div class="ts-container">
+  <div class="ts-text-container ts-genericdoc">
+  	<% var genericdoc = false %>
+  	<% var genericdoctype = "Cron" %>
+  	<% var genericdoctypename = "cron" %>
+  	<% var genericdoctypelink = "crons" %>
+		<% var genericdoctypeplurallink = "crons" %>
+    <% include ../shared/genericdoc_compose_title %>
+
+	  <form id="cron_create" 
+      name="cron_create" 
+      class="ts-form async-admin-ajax-forms" 
+      method="post" 
+      action="/p-admin/content/crons"
+      data-successredirect-href="/p-admin/content/crons" 
+      enctype="multipart/form-data" >
+
+
+      <div class="ts-row">
+				<div class="ts-genericdoc-entry ts-col-nofloat  ts-col-span8 ts-screensm-col-span12 ts-screenxs-col-span12">
+					<details open="open" class="ts-text-sm">
+					  <summary>
+					    <div class="ts-pull-right">
+					        <button class="ts-button ts-button-accent-color" type="submit" name="savebutton">save
+					        </button>
+					    </div>
+					    Cron Interval
+					  </summary>
+					  <aside>
+					  	<div class="ts-row ts-form-row">
+						    <input type="text" name="interval" class="ts-col-span12">
+					  	</div>
+					  	<div class="ts-row ts-form-row">
+						    <span class="ts-text-md">Upload script</span>
+					  	</div>
+					  	<div class="ts-row ts-form-row">
+					        <input type="file" 
+					        value="Upload new assets"
+					        id="padmin-assets"
+					        multiple="multiple" 
+					        class="ts-col-span12 ts-medialist-tagged" 
+					        placeholder="Upload Assets" 
+					        name="mediafiles" 
+					        title="upload-assets" 
+					        data-ajax-prop="assets" 
+					        data-ajax-source="/p-admin/content/crons" 
+					        data-ajax-setdata-variable="genericdoc_assets"  
+					        data-ajax-setprimaryasset-variable="genericdoc_primaryasset"  
+					        data-ajax-formie="cron_create"
+					        />
+					      </div>
+					  </aside>
+					</details>
+				</div>
+			</div>
+    </form> 
+	</div>
+</div>
+<script type="template/javascript" id="compose_assets_template">
+
+</script>
+<% include ../shared/footer %>

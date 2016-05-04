@@ -1,0 +1,30 @@
+{
+	"periodicCompatibility": "6.5.0",
+	"periodicDependencies": [
+		{
+      "extname":"periodicjs.ext.clouduploads",
+      "version":"~1.4.0"
+		},
+		{
+    	"extname":"periodicjs.ext.asyncadmin",
+    	"version":"~7.1.0"
+		}
+  ],
+  "periodicjs.ext.asyncadmin": {
+  	"menu": {
+			"Extensions": {
+				"crons": {
+		        "tree-item":"file",
+		        "tree-item-label":"Cron Service",
+		        "tree-item-link": "/%locals.adminPath%/content/crons",
+		        "tree-item-id": "periodicjs.ext.cron_service.crons",
+		        "tree-item-attributes":{
+		            "class":"async-admin-ajax-link",
+		            "title": "Crons",
+		            "style": "background-image: url(/images/adminui/svg/clock94.svg);"
+		        }
+		    }
+			}
+		}
+	}
+}

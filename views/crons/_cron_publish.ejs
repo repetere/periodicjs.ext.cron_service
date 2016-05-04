@@ -1,0 +1,86 @@
+<details open="open" class="ts-text-sm">
+  <summary>Cron Options</summary>
+  <aside>
+    <%if(genericdoc){%>
+      <input type="hidden" name="docid" id="docidlabel" class="ts-input ts-text-sm" value="<%- genericdoc._id %>" >
+      <div class="ts-row ts-form-row">
+        <div class="ts-col-span3">
+          <label class="ts-label"  for="docidlabel">ID:</label>
+        </div>
+        <div class="ts-col-span9">
+          <input type="text" id="docidlabel" disabled="disabled" class="ts-input ts-text-sm" value="<%- genericdoc._id %>" >
+        </div>
+      </div>
+      <div class="ts-row ts-form-row">
+        <div class="ts-col-span3">
+          <label class="ts-label">Title:</label>
+        </div>
+        <div class="ts-col-span9">
+          <input type="text" name="title" id="title" class="ts-input ts-text-sm"  value="<%- genericdoc.title %>" >
+        </div>
+      </div>
+      <div class="ts-row ts-form-row">
+        <div class="ts-col-span3">
+          <label class="ts-label">Name:</label>
+        </div>
+        <div class="ts-col-span9">
+          <input type="text" id="name" name="name" class="ts-input ts-text-sm"  value="<%- genericdoc.name %>" >
+        </div>
+      </div>
+      <div class="ts-row ts-form-row">
+        <div class="ts-col-span3">
+          <label class="ts-label">Cron Interval:</label>
+        </div>
+        <div class="ts-col-span9">
+          <input type="text" id="cron_interval" class="ts-input ts-text-sm"  value="<%- genericdoc.cron_interval %>" >
+        </div>
+      </div>
+      <div class="ts-row ts-form-row">
+				<div class="ts-col-span3 ">
+					<label  class="ts-label" for="active">Active</label>
+				</div>
+				<div class="ts-col-span9">
+          			<% var docstatus = [{
+						"value":"true",
+						"label":"True"
+						},{
+						"value":"False",
+						"label":"False"
+						}]; %>
+					<select name="active" id="active" class="ts-input">
+					  <% docstatus.forEach(function(status){
+					    %>
+					      <option <% if(genericdoc && (typeof genericdoc.active==='string' && genericdoc.active === status.value || typeof genericdoc.active==='boolean' && genericdoc.active ) ){%> selected="selected"
+					      <%}%> value="<%- status.value %>"><%- status.label %></option>
+					    <%
+					    }); %>
+					</select>
+				</div>
+			</div>
+      <div class="ts-row ts-form-row">
+        <div class="ts-col-span3">
+          <label class="ts-label">Created:</label>
+        </div>
+        <div class="ts-col-span9">
+          <input type="text" id="doccreatedatlabel" disabled="disabled" class="ts-input ts-text-sm" disabled="disabled"  value="<%- genericdoc.createdat %>" >
+        </div>
+      </div>
+      <div class="ts-row ts-form-row">
+        <div class="ts-col-span3">
+          <label class="ts-label">Updated:</label>
+        </div>
+        <div class="ts-col-span9">
+          <input type="text" id="docupdatedatlabel" disabled="disabled" class="ts-input ts-text-sm" disabled="disabled"  value="<%- genericdoc.updatedat %>" >
+        </div>
+      </div>
+    <%}%>
+
+    <div class="ts-row  ts-text-center ts-text-sm ts-padding-lg">
+      <button class="ts-button ts-button-accent-color" type="submit" name="savebutton">Save
+        </button>
+      <%if(genericdoc){%>
+        <a data-href="/<%- locals.adminPath %>/content/<%- genericdoctypelink %>/<%- genericdoc._id %>/delete" data-deleted-redirect-href="/<%- locals.adminPath %>/content/<%- genericdoctypeplurallink %>" class="ts-button ts-button-error-color ts-dialog-delete"/>Delete</a>
+      <%}%>
+    </div>
+  </aside>
+</details>
