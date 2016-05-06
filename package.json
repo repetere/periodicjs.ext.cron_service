@@ -1,7 +1,7 @@
 {
   "name": "periodicjs.ext.cron_service",
   "description": "Periodic Cron Service Extension",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "main": "index.js",
   "engines": {
     "node": ">~4.x"
