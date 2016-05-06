@@ -1,4 +1,14 @@
 {
+	"test": {
+		"settings": {
+			"pemfile_path": false
+		}
+	},
+	"dev_remote":{
+    "settings":{
+    	"pemfile_path": false
+    }
+  },
   "development":{
     "settings":{
     	"pemfile_path": false
