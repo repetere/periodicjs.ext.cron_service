@@ -12,11 +12,11 @@ const cronSchema = new Schema({
 	},
 	createdat: {
 		type: Date,
-		default: new Date()
+		default: Date.now
 	},
 	updatedat: {
 		type: Date,
-		default: new Date()
+		default: Date.now
 	},
 	author: String,
 	content: String,

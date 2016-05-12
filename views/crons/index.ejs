@@ -7,11 +7,9 @@
 <% genericdoctypeplurallink = "crons" %>
 <% genericdoc_tktouse = "createdat,updatedat,identification.guid,identification.date_of_birth,identification.citizenship,identification.last_name,identification.first_name,identification.salesforce_contact_id,identification.salesforce_contact_id,identification.promise_user_account_id" %>
 <div class="ts-container ts-serif-clean">
-	<div class=" ">
+	<div class="ts-page-content-container">
     <% include ../shared/genericdoc_search_filters %>
-		<div id="sf_contacts" class="sf-table ts-overflow-auto">
       <div id="ts-contacts-preloading" class="ts-preloading hide-preloading hide"></div>
-    	<div id="sf_list_of_contacts" class="sf-table ts-overflow-auto">
 				<input type="hidden" name="_csrf" value=<%- locals.token %> >
  				<%- locals.get_data_table_html({
 					data: crons,
@@ -30,8 +28,6 @@
 						colspan: 9
 					})
 				}) %>
-			</div>
-		</div>
 	</div>
 </div>
 <% include ../shared/footer %>
