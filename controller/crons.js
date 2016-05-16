@@ -476,7 +476,7 @@ var testCron = function (filePath) {
 				}
 				executeProcess(`node ${ argv.split(' ') }`, (err, stdout, stderr) => {
 					if (stdout) {
-						resolve(stdout);
+						resolve(JSON.parse(stdout.toString()));
 					}
 					else {
 						reject(err || stderr);
@@ -500,7 +500,23 @@ var mochaCron = function (req, res) {
 			}, () => {
 				return downloadRemoteFiles([cron]);
 			})
-			.then(() => )
+			.then(() => testCron(testPath))
+			.then(result => {
+				console.log('mocha cron result', result);
+				res.send({
+					result: 'success',
+					data: {
+						result: result
+					}
+				});
+			})
+			.catch(e => {
+				CoreController.handleDocumentQueryErrorResponse({
+					err: e,
+					res: res,
+					req: req
+				});
+			});
 	}
 	catch (e) {
 		CoreController.handleDocumentQueryErrorResponse({
