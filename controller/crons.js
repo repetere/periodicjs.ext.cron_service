@@ -462,6 +462,55 @@ var validateCron = function (req, res) {
 	}
 };
 
+var testCron = function (filePath) {
+	let cron = require(filePath);
+	return new Promise((resolve, reject) => {
+		try {
+			if (!cron.test) {
+				throw new Error('Cron does not have a defined test configuration');
+			}
+			else {
+				let argv = [path.join(__dirname, '../scripts/mocha_cron.js'), '--filePath', cron.test.filePath];
+				if (cron.test.options && typeof cron.test.options === 'object') {
+					argv.push('--mochaOptions', JSON.stringify(cron.test.options));
+				}
+				executeProcess(`node ${ argv.split(' ') }`, (err, stdout, stderr) => {
+					if (stdout) {
+						resolve(stdout);
+					}
+					else {
+						reject(err || stderr);
+					}
+				});
+			}
+		}
+		catch (e) {
+			reject(e);
+		}
+	});
+};
+
+var mochaCron = function (req, res) {
+	try {
+		let cron = req.controllerData.cron.toJSON();
+		let testPath = path.join(cronPath, cron.asset.attributes.periodicFilename);
+		Promisie.promisify(fs.stat)(testPath)
+			.then(() => {
+				return true;
+			}, () => {
+				return downloadRemoteFiles([cron]);
+			})
+			.then(() => )
+	}
+	catch (e) {
+		CoreController.handleDocumentQueryErrorResponse({
+			err: e,
+			res: res,
+			req: req
+		});
+	}
+};
+
 module.exports = function (resources) {
 	cron_lib = require('../lib/crons')(resources);
 	digest = cron_lib.digest;
@@ -502,5 +551,6 @@ module.exports = function (resources) {
 	cronController.router.get('/cron/:id/run', cronController.loadCron, runCron);
 	cronController.router.get('/crons/active/list', list_active_crons);
 	cronController.router.get('/cron/:id/validate', cronController.loadCron, validateCron);
+	cronController.router.get('/cron/:id/mocha', cronController.loadCron, mochaCron);
 	return cronController;
 };
