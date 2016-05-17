@@ -470,16 +470,18 @@ var testCron = function (filePath) {
 				throw new Error('Cron does not have a defined test configuration');
 			}
 			else {
-				let argv = [path.join(__dirname, '../scripts/mocha_cron.js'), '--filePath', cron.test.filePath];
+				let argv = [path.join(__dirname, '../scripts/mocha_cron.js'), '--fileName', cron.test.fileName];
 				if (cron.test.options && typeof cron.test.options === 'object') {
 					argv.push('--mochaOptions', JSON.stringify(cron.test.options));
 				}
-				executeProcess(`node ${ argv.split(' ') }`, (err, stdout, stderr) => {
+				executeProcess(`node ${ argv.join(' ') }`, {
+					cwd: path.join(__dirname, `../../../content/themes/${ appSettings.theme }/lib`)
+				}, (err, stdout, stderr) => {
 					if (stdout) {
-						resolve(JSON.parse(stdout.toString()));
+						resolve((stdout instanceof Buffer) ? stdout.toString() : stdout);
 					}
 					else {
-						reject(err || stderr);
+						reject(err || (stderr instanceof Buffer) ? stderr.toString() : stderr);
 					}
 				});
 			}
