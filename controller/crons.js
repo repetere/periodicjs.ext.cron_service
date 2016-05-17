@@ -396,6 +396,24 @@ var runCron = function (req, res) {
 };
 
 /**
+ * Removes temporary file from content/files/crons directory if cron is not currently active
+ * @param  {Object} cron Periodic cron object
+ */
+var removeNonActiveCronAfterProcess = function (cron) {
+	try {
+		let cronMap = cron_lib.getCronMap();
+		if (Object.keys(cronMap).indexOf(cron._id.toString()) === -1) {
+			fs.remove(path.join(cronPath, cron.asset.attributes.periodicFilename), function () {
+				logger.silly('Removed temp cron file after validate');
+			});
+		}
+	}
+	catch (e) {
+		logger.warn('Could not remove temp cron file after process', e);
+	}
+};
+
+/**
  * Utility function for running validate_cron script in a child process
  * @param  {string} filePath The absolute path to the file being linted
  * @return {Object} returns a new Promise
@@ -414,7 +432,7 @@ var lint = function (filePath) {
 };
 
 /**
- * Middleware function that runs cron file validation and sends the results of the lint
+ * Function that runs cron file validation and sends the results of the lint
  * @param  {Object} req Express request object
  * @param {Object} req.controllerData Data that has been appended to request object is previous middleware
  * @param {Object} req.controllerData.cron Mongo cron object
@@ -438,14 +456,10 @@ var validateCron = function (req, res) {
 						message: result
 					}
 				});
-				let cronMap = cron_lib.getCronMap();
-				if (Object.keys(cronMap).indexOf(cron._id.toString()) === -1) {
-					fs.remove(path.join(cronPath, cron.asset.attributes.periodicFilename), function () {
-						logger.silly('Removed temp validated cron file');
-					});
-				}
+				removeNonActiveCronAfterProcess(cron);
 			})
 			.catch(e => {
+				removeNonActiveCronAfterProcess(cron);
 				CoreController.handleDocumentQueryErrorResponse({
 					err: e,
 					res: res,
@@ -462,6 +476,11 @@ var validateCron = function (req, res) {
 	}
 };
 
+/**
+ * Executes child process which runs cron test file using mocha assumes that the test file is in the theme lib directory
+ * @param  {string} filePath An absolute file path for the cron file
+ * @return {Object}          returns a new Promise
+ */
 var testCron = function (filePath) {
 	let cron = require(filePath);
 	return new Promise((resolve, reject) => {
@@ -470,7 +489,7 @@ var testCron = function (filePath) {
 				throw new Error('Cron does not have a defined test configuration');
 			}
 			else {
-				let argv = [path.join(__dirname, '../scripts/mocha_cron.js'), '--fileName', cron.test.fileName];
+				let argv = [path.join(__dirname, '../scripts/mocha_cron.js'), '--fileName', cron.test.fileName, '--modulePath', filePath];
 				if (cron.test.options && typeof cron.test.options === 'object') {
 					argv.push('--mochaOptions', JSON.stringify(cron.test.options));
 				}
@@ -492,6 +511,12 @@ var testCron = function (filePath) {
 	});
 };
 
+/**
+ * Function that runs cron test spec and responds with the passing and failing cases
+ * @param  {Object} req Express request object
+ * @param {Object} req.controllerData.cron Periodic cron object
+ * @param  {Object} res Express response object
+ */
 var mochaCron = function (req, res) {
 	try {
 		let cron = req.controllerData.cron.toJSON();
@@ -504,15 +529,23 @@ var mochaCron = function (req, res) {
 			})
 			.then(() => testCron(testPath))
 			.then(result => {
-				console.log('mocha cron result', result);
-				res.send({
+				let testResult = JSON.parse(result);
+				let response = {
 					result: 'success',
-					data: {
-						result: result
-					}
-				});
+					data: {}
+				};
+				if (testResult.stats && Number(testResult.stats.failures) > 0) {
+					response.data.message = JSON.stringify(testResult);
+				}
+				else {
+					response.data.message = 'Completed test spec with no failures';
+				}
+				logger.info(`${ cron.asset.attributes.periodicFilename } test results`, testResult);
+				res.send(response);
+				removeNonActiveCronAfterProcess(cron);
 			})
 			.catch(e => {
+				removeNonActiveCronAfterProcess(cron);
 				CoreController.handleDocumentQueryErrorResponse({
 					err: e,
 					res: res,

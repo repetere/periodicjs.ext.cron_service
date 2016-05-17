@@ -4,34 +4,7 @@ const Promisie = require('promisie');
 const fs = require('fs');
 const minimist = require('minimist');
 const path = require('path');
-const MochaReporter = require('mocha-js-reporter')(Mocha);
 const merge = require('util-extend');
-
-var reporter = function (err, data) {
-	if (err) {
-		process.stderr.write(JSON.stringify(err));
-	}
-	else {
-		if (data && data.stats && data.stats.failures > 0) {
-			process.stdout.write(JSON.stringify({
-				result: 'success',
-				data: {
-					message: 'Test completed with failures',
-					report: data
-				}
-			}));
-		}
-		else {
-			process.stdout.write(JSON.stringify({
-				result: 'success',
-				data: {
-					message: 'Test completed with no failures',
-					report: data
-				}
-			}));
-		}
-	}
-};
 
 (function (argv) {
 	try {
@@ -42,23 +15,22 @@ var reporter = function (err, data) {
 			throw new TypeError(`${ testPath } does not exist or does not have a extension name`);
 		}
 		let mochaOptions = (typeof argv.mochaOptions === 'string') ? JSON.parse(argv.mochaOptions) : false;
-		let mocha = new Mocha((mochaOptions) ? merge(mochaOptions.options, { reporter: new MochaReporter(reporter) }) : {
-			ui: 'tdd',
-			reporter: new MochaReporter(reporter)
+		let mocha = new Mocha((mochaOptions) ? merge(mochaOptions.options, { reporter: 'json' }) : {
+			reporter: 'json'
 		});
 		Promisie.promisify(fs.stat)(testPath)
 			.then(() => {
 				mocha.addFile(testPath);
-				mocha.run(() => {
-					process.on('exit', () => process.exit(0));
-				});
+				return Promisie.promisify(mocha.run, mocha)();
 			})
+			.then(null, process.exit)
 			.catch(e => {
 				process.stderr.write(JSON.stringify(e));
 				process.exit(1);
 			});
 	}
 	catch (e) {
+		console.log(e);
 		process.stderr.write(JSON.stringify(e));
 		process.exit(1);
 	}
