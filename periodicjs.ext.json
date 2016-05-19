@@ -3,7 +3,7 @@
 	"periodicDependencies": [
 		{
       "extname":"periodicjs.ext.clouduploads",
-      "version":"~1.4.0"
+      "version":"~6.0.4"
 		},
 		{
     	"extname":"periodicjs.ext.asyncadmin",
