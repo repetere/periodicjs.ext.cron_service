@@ -489,12 +489,13 @@ var testCron = function (filePath) {
 				throw new Error('Cron does not have a defined test configuration');
 			}
 			else {
-				let argv = [path.join(__dirname, '../scripts/mocha_cron.js'), '--fileName', cron.test.fileName, '--modulePath', filePath];
+				let argv = [path.join(__dirname, '../scripts/mocha_cron.js'), '--fileName', path.join(path.join(__dirname, `../../../content/themes/${ appSettings.theme }/lib`), cron.test.fileName), '--modulePath', filePath];
 				if (cron.test.options && typeof cron.test.options === 'object') {
 					argv.push('--mochaOptions', JSON.stringify(cron.test.options));
 				}
+				console.log('root', path.join(__dirname, '../../../'));
 				executeProcess(`node ${ argv.join(' ') }`, {
-					cwd: path.join(__dirname, `../../../content/themes/${ appSettings.theme }/lib`)
+					cwd: path.join(__dirname, '../../../')
 				}, (err, stdout, stderr) => {
 					if (stdout) {
 						resolve((stdout instanceof Buffer) ? stdout.toString() : stdout);
@@ -528,21 +529,25 @@ var mochaCron = function (req, res) {
 				return downloadRemoteFiles([cron]);
 			})
 			.then(() => testCron(testPath))
-			.then(result => {
-				let testResult = JSON.parse(result);
-				let response = {
-					result: 'success',
-					data: {}
-				};
-				if (testResult.stats && Number(testResult.stats.failures) > 0) {
-					response.data.message = JSON.stringify(testResult);
+			.then(testResult => {
+				try {
+					let response = {
+						result: 'success',
+						data: {}
+					};
+					if (testResult.stats && Number(testResult.stats.failures) > 0) {
+						response.data.message = JSON.stringify(testResult);
+					}
+					else {
+						response.data.message = 'Completed test spec with no failures';
+					}
+					logger.info(`${ cron.asset.attributes.periodicFilename } test results`, testResult);
+					res.send(response);
+					removeNonActiveCronAfterProcess(cron);
 				}
-				else {
-					response.data.message = 'Completed test spec with no failures';
+				catch (e) {
+					return Promise.reject(e);
 				}
-				logger.info(`${ cron.asset.attributes.periodicFilename } test results`, testResult);
-				res.send(response);
-				removeNonActiveCronAfterProcess(cron);
 			})
 			.catch(e => {
 				removeNonActiveCronAfterProcess(cron);

@@ -10,9 +10,9 @@ const merge = require('util-extend');
 	try {
 		argv = argv.splice(2);
 		argv = minimist(argv);
-		let testPath = path.join(process.cwd(), argv.fileName);
+		let testPath = argv.fileName;
 		if (typeof testPath !== 'string' || path.extname(testPath) !== '.js') {
-			throw new TypeError(`${ testPath } does not exist or does not have a extension name`);
+			throw new TypeError(`${ testPath } does not exist or does not have a valid extension type`);
 		}
 		let mochaOptions = (typeof argv.mochaOptions === 'string') ? JSON.parse(argv.mochaOptions) : false;
 		let mocha = new Mocha((mochaOptions) ? merge(mochaOptions.options, { reporter: 'json' }) : {
@@ -23,7 +23,7 @@ const merge = require('util-extend');
 				mocha.addFile(testPath);
 				return Promisie.promisify(mocha.run, mocha)();
 			})
-			.then(null, process.exit)
+			.then(process.exit)
 			.catch(e => {
 				process.stderr.write(JSON.stringify(e));
 				process.exit(1);
