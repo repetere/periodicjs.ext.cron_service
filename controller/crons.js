@@ -6,6 +6,7 @@ const usecroncheckfile = path.resolve(__dirname, '../../../content/files/cronche
 const parallel = Promisie.promisify(require('async').parallel);
 const cronPath = path.resolve(__dirname, '../../../content/files/crons');
 const executeProcess = require('child_process').exec;
+const spawnProcess = require('child_process').spawn;
 const crypto = require('crypto');
 
 var CoreController,
@@ -493,15 +494,35 @@ var testCron = function (filePath) {
 				if (cron.test.options && typeof cron.test.options === 'object') {
 					argv.push('--mochaOptions', JSON.stringify(cron.test.options));
 				}
-				console.log('root', path.join(__dirname, '../../../'));
-				executeProcess(`node ${ argv.join(' ') }`, {
+				let child = spawnProcess('node', argv, {
+					stdio: ['ignore', 'pipe', 'pipe'],
 					cwd: path.join(__dirname, '../../../')
-				}, (err, stdout, stderr) => {
-					if (stdout) {
-						resolve((stdout instanceof Buffer) ? stdout.toString() : stdout);
+				});
+				let result;
+				let error = '';
+				child.stdout.on('data', d => {
+					let data = d.toString();
+					try {
+						if (/^\{/.test(data)) {
+							let parsed = JSON.parse(data);
+							if (parsed.failures && parsed.passes) {
+								result = parsed;
+							}
+						}
+					}
+					catch (e) {
+						return;
+					}
+				});
+				child.stderr.on('data', e => {
+					error += e.toString();
+				});
+				child.on('exit', () => {
+					if (result) {
+						resolve(result);
 					}
 					else {
-						reject(err || (stderr instanceof Buffer) ? stderr.toString() : stderr);
+						reject(error);
 					}
 				});
 			}
@@ -535,6 +556,9 @@ var mochaCron = function (req, res) {
 						result: 'success',
 						data: {}
 					};
+					if (typeof testResult === 'string') {
+						throw new Error(`Error from child - ${ testResult }`);
+					}
 					if (testResult.stats && Number(testResult.stats.failures) > 0) {
 						response.data.message = JSON.stringify(testResult);
 					}
