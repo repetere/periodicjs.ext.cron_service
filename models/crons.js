@@ -45,6 +45,8 @@ const cronSchema = new Schema({
 		type: String,
 		'default': 'periodicjs.theme.default'
 	},
+	command_line_arguments: String,
+	runtime_arguments: String,
 	attributes: Schema.Types.Mixed,
 	contenttypeattributes: Schema.Types.Mixed,
 	extensionattributes: Schema.Types.Mixed,
