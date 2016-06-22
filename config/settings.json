@@ -1,32 +1,38 @@
 {
   "test": {
     "settings": {
-      "pemfile_path": false
+      "pemfile_path": false,
+      "validate_theme": true
     }
   },
   "dev_remote":{
     "settings":{
-      "pemfile_path": false
+      "pemfile_path": false,
+      "validate_theme": true
     }
   },
   "development":{
     "settings":{
-      "pemfile_path": false
+      "pemfile_path": false,
+      "validate_theme": true
     }
   },
   "qa":{
     "settings":{
-      "pemfile_path": false
+      "pemfile_path": false,
+      "validate_theme": true
     }
   },
   "staging":{
     "settings":{
-      "pemfile_path": false
+      "pemfile_path": false,
+      "validate_theme": true
     }
   },
   "production":{
     "settings":{
-      "pemfile_path": false
+      "pemfile_path": false,
+      "validate_theme": true
     }
   }
 }

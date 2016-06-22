@@ -22,7 +22,8 @@ var CoreController,
 	CoreUtilities,
 	cloudUploads,
 	downloadRemoteFiles,
-	periodic;
+	periodic,
+	themeName;
 
 var setCronFilePath = function (req, res, next) {
 	req.localuploadpath = cronPath;
@@ -109,7 +110,8 @@ var createCrons = function (req, res) {
 								content: 'cron',
 								asset: associatedAsset._id,
 								asset_signature: filedata.signature,
-								cron_interval: req.body.interval || '00 00 * * * *'
+								cron_interval: req.body.interval || '00 00 00 * * *',
+								theme: (typeof themeName === 'string') ? themeName : undefined
 							};
 						});
 					});
@@ -181,40 +183,40 @@ var createCrons = function (req, res) {
 };
 
 var cron_create_index = function (req, res) {
-	var viewtemplate = {
+	let viewtemplate = {
 			viewname: 'crons/new',
 			themefileext: appSettings.templatefileextension,
 			extname: 'periodicjs.ext.cron_service'
-		},
-		viewdata = {
-			pagedata: {
-				title: 'Create Cron',
-				toplink: '&raquo; <a href="/"></a> &raquo; Dashboard &raquo; Cron Create',
-				extensions: CoreUtilities.getAdminMenu()
-			},
-			user: req.user
 		};
+	let viewdata = {
+		pagedata: {
+			title: 'Create Cron',
+			toplink: '&raquo; <a href="/"></a> &raquo; Dashboard &raquo; Cron Create',
+			extensions: CoreUtilities.getAdminMenu()
+		},
+		user: req.user
+	};
 	CoreController.renderView(req, res, viewtemplate, viewdata);
 };
 
 var list_active_crons = function(req, res){
 	let cronMap = cron_lib.getCronMap();
-	var viewtemplate = {
+	let viewtemplate = {
 			viewname: 'crons/active',
 			themefileext: appSettings.templatefileextension,
 			extname: 'periodicjs.ext.cron_service'
-		},
-		viewdata = {
-			pagedata: {
-				title: 'Active Cron',
-				toplink: '&raquo; Active Crons',
-				extensions: CoreUtilities.getAdminMenu()
-			},
-			crons: Object.keys(cronMap).map(function(cronmapobj){
-				return cronMap[cronmapobj].cron;
-			}),
-			user: req.user
 		};
+	let viewdata = {
+		pagedata: {
+			title: 'Active Cron',
+			toplink: '&raquo; Active Crons',
+			extensions: CoreUtilities.getAdminMenu()
+		},
+		crons: Object.keys(cronMap).map(function(cronmapobj){
+			return cronMap[cronmapobj].cron;
+		}),
+		user: req.user
+	};
 	CoreController.renderView(req, res, viewtemplate, viewdata);
 };
 
@@ -597,6 +599,7 @@ module.exports = function (resources) {
 	downloadRemoteFiles = cron_lib.downloadRemoteFiles;
 	appSettings = resources.settings;
 	appenvironment = appSettings.application.environment;
+	themeName = (resources.app.controller.extension.cron_service.settings.validate_theme === true) ? appSettings.theme : false;
 	CoreController = resources.core.controller;
 	CoreUtilities = resources.core.utilities;
 	Cron = resources.mongoose.model('Cron');

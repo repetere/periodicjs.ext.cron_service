@@ -10,8 +10,11 @@ var initialize = function (periodic) {
 	if (!envconfig.pemfile_path) {
 		let pemPath = fs.readJsonSync(path.join(__dirname, '../../content/config/config.json')).client_side_encryption_key_path;
 		envconfig.pemfile_path = path.join(__dirname, '../../', pemPath);
-		config[appenvironment].settings = envconfig;
 	}
+	if (envconfig.validate_theme !== false) {
+		envconfig.validate_theme = true;
+	}
+	config[appenvironment].settings = envconfig;
 	periodic.app.controller.extension.cron_service = periodic.app.controller.extension.cron_service || {};
 	periodic.app.controller.extension.cron_service.settings = envconfig;
 	periodic.mongoose.model('Cron', cronSchema);
