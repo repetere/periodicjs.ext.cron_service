@@ -622,11 +622,23 @@ module.exports = function (resources) {
 		use_full_data: true,
 		extname: 'periodicjs.ext.cron_service'
 	};
-	cronSettings.override = {
+	let override = {
 		create_item: [setCronFilePath, assetController.multiupload, assetController.create_assets_from_files, createCrons],
 		create_index: [cron_create_index],
-		delete_item: [deleteCron]
+		delete_item: [deleteCron],
+		get_index: [
+			function (req, res, next) {
+				req.controllerData = req.controllerData || {};
+				req.controllerData.model_query = (typeof themeName === 'string') ? { theme: themeName } : {};
+				next();
+			},
+      CoreController.controller_load_model_with_count(cronSettings), 
+      CoreController.controller_load_model_with_default_limit(cronSettings), 
+      CoreController.controller_model_query(cronSettings), 
+      CoreController.controller_index(cronSettings)
+    ]
 	};
+	cronSettings.override = override;
 	let cronController = CoreController.controller_routes(cronSettings);
 	let asyncadminController = resources.app.controller.extension.asyncadmin;
 	cronController.router.post('/crons/setactive/:id/:status', cronController.loadCron, set_cron_status, updateCronStatus);
