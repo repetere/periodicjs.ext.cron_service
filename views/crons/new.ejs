@@ -18,7 +18,7 @@
 
 
       <div class="ts-row">
-				<div class="ts-genericdoc-entry ts-col-nofloat  ts-col-span8 ts-screensm-col-span12 ts-screenxs-col-span12">
+				<div class="ts-genericdoc-entry ts-col-nofloat  ts-col-span10 ts-screensm-col-span12 ts-screenxs-col-span12">
 					<details open="open" class="ts-text-sm">
 					  <summary>
 					    <div class="ts-pull-right">
@@ -28,6 +28,39 @@
 					    Cron Interval
 					  </summary>
 					  <aside>
+					  	<div class="ts-row ts-form-row">
+						    <table class="ts-table ts-width-100" id="cron-table-input">
+									<thead>
+										<th>second</th>
+										<th>minute</th>
+										<th>hour</th>
+										<th>date</th>
+										<th>month</th>
+										<th>year</th>
+									</thead>
+									<tbody>
+										<td ><input style="width:90%; text-align:center;" type="text" value="00"/></td>
+										<td ><input style="width:90%; text-align:center;" type="text" value="00"/></td>
+										<td ><input style="width:90%; text-align:center;" type="text" value="*"/></td>
+										<td ><input style="width:90%; text-align:center;" type="text" value="*"/></td>
+										<td ><input style="width:90%; text-align:center;" type="text" value="*"/></td>
+										<td ><input style="width:90%; text-align:center;" type="text" value="*"/></td>
+									</tbody>
+									<tfoot>
+										<td colspan="2"></td>
+										<td colspan="2">
+										<div class="ts-text-xs">
+										* any value<br>
+										, value list separator<br>
+										- range of values<br>
+										/ step value<br>
+										</div>
+										</td>
+										<td colspan="2"></td>
+										</td>
+									</tfoot>
+								</table>
+					  	</div>
 					  	<div class="ts-row ts-form-row">
 						    <input type="text" name="interval" class="ts-col-span12">
 					  	</div>
