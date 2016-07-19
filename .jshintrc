@@ -11,6 +11,7 @@
   "evil": false,
   "latedef": true,
   "nonew": true,
+  "esversion": 6,
   "trailing": true,
   "immed": true,
   "smarttabs": true,
