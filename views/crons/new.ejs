@@ -1,4 +1,5 @@
 <% include ../shared/header %>
+<script type="text/javascript" src="/extensions/periodicjs.ext.cron_service/js/createcron.min.js"></script>
 <div class="ts-container">
   <div class="ts-text-container ts-genericdoc">
   	<% var genericdoc = false %>
@@ -29,27 +30,33 @@
 					  </summary>
 					  <aside>
 					  	<div class="ts-row ts-form-row">
-								<label class="ts-label">Name (optional)</label>
-						    <input type="text" name="title" class="ts-col-span12">
-					  	</div>
-					  	<div class="ts-row ts-form-row">
+								<label class="ts-label">Cron Interval </label>
 						    <table class="ts-table ts-width-100" id="cron-table-input">
 									<thead>
-										<th><label class="ts-label">second</label></th>
-										<th><label class="ts-label">minute</label></th>
-										<th><label class="ts-label">hour</label></th>
-										<th><label class="ts-label">date</label></th>
-										<th><label class="ts-label">month</label></th>
-										<th><label class="ts-label">year</label></th>
+										<tr>
+											<th><label class="ts-label">second</label></th>
+											<th><label class="ts-label">minute</label></th>
+											<th><label class="ts-label">hour</label></th>
+											<th><label class="ts-label">date</label></th>
+											<th><label class="ts-label">month</label></th>
+											<th><label class="ts-label">year</label></th>
+										</tr>
 									</thead>
 									<tbody>
-										<td ><input style="width:90%; text-align:center;" type="text" name="interval-second" value="00"/></td>
-										<td ><input style="width:90%; text-align:center;" type="text" name="interval-minute" value="00"/></td>
-										<td ><input style="width:90%; text-align:center;" type="text" name="interval-hour" value="*"/></td>
-										<td ><input style="width:90%; text-align:center;" type="text" name="interval-date" value="*"/></td>
-										<td ><input style="width:90%; text-align:center;" type="text" name="interval-month" value="*"/></td>
-										<td ><input style="width:90%; text-align:center;" type="text" name="interval-year" value="*"/></td>
+										<tr>
+											<td ><input style="width:90%; text-align:center;" type="text" name="interval-second" value="00"/></td>
+											<td ><input style="width:90%; text-align:center;" type="text" name="interval-minute" value="00"/></td>
+											<td ><input style="width:90%; text-align:center;" type="text" name="interval-hour" value="*"/></td>
+											<td ><input style="width:90%; text-align:center;" type="text" name="interval-date" value="*"/></td>
+											<td ><input style="width:90%; text-align:center;" type="text" name="interval-month" value="*"/></td>
+											<td ><input style="width:90%; text-align:center;" type="text" name="interval-year" value="*"/></td>
+										</tr>
+										<tr>
+											<td colspan="6" class="ts-text-center">(<span id="interval-display"></span>
+)</td>
+										</tr>
 									</tbody>
+									<!--
 									<tfoot>
 										<td colspan="2"></td>
 										<td colspan="2">
@@ -63,17 +70,21 @@
 										<td colspan="2"></td>
 										</td>
 									</tfoot>
+									-->
 								</table>
 					  	</div>
 					  	<div class="ts-row ts-form-row">
-								<label class="ts-label">Cron Interval</label>
-						    <input type="text" name="interval-display" disabled class="ts-col-span12">
+								<input type="hidden" id="cron-interval" name="interval"/>
 					  	</div>
 					  	<div class="ts-row ts-form-row">
 								<label class="ts-label">Runtime Options (optional)</label>
 						    <div id="codejsoneditor" class="ts-row ts-form-row">
 									<textarea  id="genericdoc-codemirror" name="runtime_options"  class=" noFormSubmit codemirroreditor jsonEditor ts-col-span12" style="height:60em;">{}</textarea>
 								</div>
+					  	</div>
+					  	<div class="ts-row ts-form-row">
+								<label class="ts-label">Command Line Arguments (optional)</label>
+						    <input type="text" name="command_line_arguments" id="command_line_arguments"  class="ts-col-span12">
 					  	</div>
 					  	<div class="ts-row ts-form-row">
 						    <label class="ts-label">Upload script</label>

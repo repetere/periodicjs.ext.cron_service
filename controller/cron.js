@@ -103,6 +103,8 @@ var createCrons = function (req, res) {
 						return Promise.resolve(Asset.findOne({
 							name: path.basename(filedata.file.attributes.periodicFilename, '.js').replace(/_/g, '-') + '-js'
 						})).then(associatedAsset => {
+							console.log('req.body', req.body);
+
 							return {
 								title: filedata.file.attributes.periodicFilename,
 								name: filedata.file.attributes.periodicFilename,
@@ -111,6 +113,7 @@ var createCrons = function (req, res) {
 								asset: associatedAsset._id,
 								asset_signature: filedata.signature,
 								cron_interval: req.body.interval || '00 00 00 * * *',
+								runtime_options: JSON.parse(req.body.runtime_options || '{}'),
 								theme: (typeof themeName === 'string') ? themeName : undefined
 							};
 						});
@@ -184,10 +187,10 @@ var createCrons = function (req, res) {
 
 var cron_create_index = function (req, res) {
 	let viewtemplate = {
-			viewname: 'crons/new',
-			themefileext: appSettings.templatefileextension,
-			extname: 'periodicjs.ext.cron_service'
-		};
+		viewname: 'crons/new',
+		themefileext: appSettings.templatefileextension,
+		extname: 'periodicjs.ext.cron_service'
+	};
 	let viewdata = {
 		pagedata: {
 			title: 'Create Cron',
@@ -199,20 +202,20 @@ var cron_create_index = function (req, res) {
 	CoreController.renderView(req, res, viewtemplate, viewdata);
 };
 
-var list_active_crons = function(req, res){
+var list_active_crons = function (req, res) {
 	let cronMap = cron_lib.getCronMap();
 	let viewtemplate = {
-			viewname: 'crons/active',
-			themefileext: appSettings.templatefileextension,
-			extname: 'periodicjs.ext.cron_service'
-		};
+		viewname: 'crons/active',
+		themefileext: appSettings.templatefileextension,
+		extname: 'periodicjs.ext.cron_service'
+	};
 	let viewdata = {
 		pagedata: {
 			title: 'Active Cron',
 			toplink: '&raquo; Active Crons',
 			extensions: CoreUtilities.getAdminMenu()
 		},
-		crons: Object.keys(cronMap).map(function(cronmapobj){
+		crons: Object.keys(cronMap).map(function (cronmapobj) {
 			return cronMap[cronmapobj].cron;
 		}),
 		user: req.user
@@ -226,7 +229,7 @@ var list_active_crons = function(req, res){
  * @param {Object} req.controllerData.cron Mongo cron object
  * @param {Object}   res  Express response object
  */
-var set_cron_status = function(req,res,next){
+var set_cron_status = function (req, res, next) {
 	req.body = req.controllerData.cron.toJSON();
 	req.body.docid = req.controllerData.cron._id;
 	req.body.active = !req.body.active;
@@ -241,13 +244,13 @@ var updateCronStatus = function (req, res) {
 	try {
 		let cronStatus = req.body.active;
 		CoreController.updateModelPromisified({
-			model: Cron,
-			docid: req.body.docid,
-			id: req.body.docid,
-			updatedoc: req.body,
-			originalrevision: req.controllerData.cron,
-			skipemptyvaluecheck: true
-		})
+				model: Cron,
+				docid: req.body.docid,
+				id: req.body.docid,
+				updatedoc: req.body,
+				originalrevision: req.controllerData.cron,
+				skipemptyvaluecheck: true
+			})
 			.then(() => {
 				let modifiedCron = [{
 					id: req.controllerData.cron._id,
@@ -290,41 +293,41 @@ var deleteCron = function (req, res) {
 		CoreController.loadModelPromisified(options)
 			.then(cron => {
 				return parallel({
-					delete_cron: function (cb) {
-						CoreController.deleteModelPromisified({
-							model: Cron,
-							deleteid: cron._id
-						})
-							.then(() => {
-								cb(null, 'deleted cron');
-							}, cb);
-					},
-					delete_asset: function (cb) {
-						CoreController.deleteModelPromisified({
-							model: Asset,
-							deleteid: cron.asset._id
-						})
-							.then(() => {
-								cb(null, 'deleted asset');
-							}, cb);
+						delete_cron: function (cb) {
+							CoreController.deleteModelPromisified({
+									model: Cron,
+									deleteid: cron._id
+								})
+								.then(() => {
+									cb(null, 'deleted cron');
+								}, cb);
+						},
+						delete_asset: function (cb) {
+							CoreController.deleteModelPromisified({
+									model: Asset,
+									deleteid: cron.asset._id
+								})
+								.then(() => {
+									cb(null, 'deleted asset');
+								}, cb);
 
-					},
-					delete_remote_file: function (cb) {
-						let asset = cron.asset;
-						let cloudClient = cloudUploads.cloudstorageclient();
-						cloudClient.removeFile(asset.attributes.cloudcontainername, asset.attributes.cloudfilepath, cb);
-					},
-					delete_local_file: function (cb) {
-						let filePath = path.join(cronPath, cron.asset.attributes.periodicFilename);
-						Promisie.promisify(fs.stat)(filePath)
-							.then(() => {
-								fs.remove(filePath, cb);
-							}, e => {
-								logger.silly('There is not local file', e);
-								cb(null, null);
-							});
-					}
-				})
+						},
+						delete_remote_file: function (cb) {
+							let asset = cron.asset;
+							let cloudClient = cloudUploads.cloudstorageclient();
+							cloudClient.removeFile(asset.attributes.cloudcontainername, asset.attributes.cloudfilepath, cb);
+						},
+						delete_local_file: function (cb) {
+							let filePath = path.join(cronPath, cron.asset.attributes.periodicFilename);
+							Promisie.promisify(fs.stat)(filePath)
+								.then(() => {
+									fs.remove(filePath, cb);
+								}, e => {
+									logger.silly('There is not local file', e);
+									cb(null, null);
+								});
+						}
+					})
 					.then(() => cron);
 			})
 			.then(cron => {
@@ -365,7 +368,7 @@ var runCron = function (req, res) {
 	downloadRemoteFiles(downloadOptions)
 		.then(() => {
 			let fnPath = path.join(cronPath, cron.asset.attributes.periodicFilename);
-			require(fnPath).script(periodic)();
+			require(fnPath).script(periodic)(Object.assign({}, cron.runtime_options));
 			return new Promise(resolve => {
 				setTimeout(function () {
 					resolve();
@@ -629,14 +632,16 @@ module.exports = function (resources) {
 		get_index: [
 			function (req, res, next) {
 				req.controllerData = req.controllerData || {};
-				req.controllerData.model_query = (typeof themeName === 'string') ? { theme: themeName } : {};
+				req.controllerData.model_query = (typeof themeName === 'string') ? {
+					theme: themeName
+				} : {};
 				next();
 			},
-      CoreController.controller_load_model_with_count(cronSettings), 
-      CoreController.controller_load_model_with_default_limit(cronSettings), 
-      CoreController.controller_model_query(cronSettings), 
-      CoreController.controller_index(cronSettings)
-    ]
+			CoreController.controller_load_model_with_count(cronSettings),
+			CoreController.controller_load_model_with_default_limit(cronSettings),
+			CoreController.controller_model_query(cronSettings),
+			CoreController.controller_index(cronSettings)
+		]
 	};
 	cronSettings.override = override;
 	let cronController = CoreController.controller_routes(cronSettings);
