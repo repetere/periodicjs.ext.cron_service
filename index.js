@@ -8,7 +8,7 @@ var extension = function (periodic) {
 	try {
 		//configure locals
 		periodic = require('./utility/locals')(periodic);
-		// periodic.app.themeconfig.utility = require('./utility/index.js')(periodic);
+		periodic.app.themeconfig.utility = require('./utility/index.js')(periodic);
 		periodic.app.controller.extension.cron_service.controller = Object.assign({},require('./controller/index')(periodic));
 		cronServiceRouter = require('./router/index')(periodic);
 		periodic.app.use(cronServiceRouter);

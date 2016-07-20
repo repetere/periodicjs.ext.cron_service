@@ -155,8 +155,7 @@ module.exports = function (grunt) {
 					compress: true
 				},
 				files: {
-					'public/stylesheets/asyncadmin.css': 'resources/stylesheets/asyncadmin.less',
-					'public/v2/stylesheets/asyncadmin.bulma.css': 'resources/v2/stylesheets/asyncadmin.bulma.less'
+					'public/stylesheets/cron.css': 'resources/stylesheets/cron.less',
 				}
 			}
 		},
@@ -165,7 +164,7 @@ module.exports = function (grunt) {
 				cwd: 'public',
 				expand: true,
 				src: '**/*.*',
-				dest: '../../public/extensions/periodicjs.ext.asyncadmin',
+				dest: '../../public/extensions/periodicjs.ext.cron_service',
 			},
 		},
 		watch: {
