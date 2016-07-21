@@ -69,10 +69,10 @@
     "periodicjs"
   ],
   "main": "index.js",
-  "maintainers": [
+  "contributors": [
     {
-      "email": "janbialostok@gmail.com",
-      "name": "janbialostok"
+      "email": "yaw.etse@gmail.com",
+      "name": "yawetse"
     }
   ],
   "name": "periodicjs.ext.cron_service",
@@ -87,5 +87,5 @@
     "postuninstall": "node uninstall.js",
     "test": "mocha -R spec --recursive"
   },
-  "version": "1.5.0"
+  "version": "1.6.0"
 }
