@@ -1,0 +1,33 @@
+<% include ../shared/header %>
+<% genericdoctype = "Cron" %>
+<% genericdoccount = cronscount %>
+<% genericdocpages = cronpages %>
+<% genericdoctypelink = "crons" %>
+<% genericdoctypeplurallink = "crons" %>
+<% genericdoc_tktouse = "title,createdat,updatedat,active,theme,cron_interval" %>
+<div class="ts-container ts-serif-clean">
+	<div class="ts-page-content-container">
+    <% include ../shared/genericdoc_search_filters %>
+      <div id="ts-contacts-preloading" class="ts-preloading hide-preloading hide"></div>
+			<% include _cron_service_status %>
+			<input type="hidden" name="_csrf" value=<%- locals.token %> >
+			<%- locals.get_data_table_html({
+				data: crons,
+				data_attributes:locals.cron_util.cron_table.data_attributes_all,
+				responsive_table :true,
+				responsive_collapse: locals.default_responsive_collapse(locals.cron_util.cron_table.responsive_collapse),
+				responsive_expand:locals.default_responsive_expand(),
+				thead:locals.default_thead(),
+				tbody: locals.cron_util.cron_table.tbody({Moment:locals.viewhelper.moment,locals,show_theme:true}),
+				custom_tfoot: locals.default_custom_tfoot({
+					total:crons.length,
+					count:genericdoccount,
+					pages:genericdocpages,
+					currentlimit:request.query.limit,
+					currentpage:request.query.pagenum,
+					colspan: 9
+				})
+			}) %>
+	</div>
+</div>
+<% include ../shared/footer %>

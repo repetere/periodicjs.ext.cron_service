@@ -1,15 +1,15 @@
 <% include ../shared/header %>
-<% ils_nav_section="crons" %>
 <% genericdoctype = "Cron" %>
 <% genericdoccount = cronscount %>
 <% genericdocpages = cronpages %>
 <% genericdoctypelink = "crons" %>
 <% genericdoctypeplurallink = "crons" %>
-<% genericdoc_tktouse = "createdat,updatedat,identification.guid,identification.date_of_birth,identification.citizenship,identification.last_name,identification.first_name,identification.salesforce_contact_id,identification.salesforce_contact_id,identification.promise_user_account_id" %>
+<% genericdoc_tktouse = "title,createdat,updatedat,active,theme,cron_interval" %>
 <div class="ts-container ts-serif-clean">
 	<div class="ts-page-content-container">
     <% include ../shared/genericdoc_search_filters %>
       <div id="ts-contacts-preloading" class="ts-preloading hide-preloading hide"></div>
+			<% include _cron_service_status %>
 				<input type="hidden" name="_csrf" value=<%- locals.token %> >
  				<%- locals.get_data_table_html({
 					data: crons,
@@ -18,7 +18,7 @@
 					responsive_collapse: locals.default_responsive_collapse(locals.cron_util.cron_table.responsive_collapse),
 					responsive_expand:locals.default_responsive_expand(),
 					thead:locals.default_thead(),
-					tbody: locals.cron_util.cron_table.tbody(locals.viewhelper.moment),
+					tbody: locals.cron_util.cron_table.tbody({Moment:locals.viewhelper.moment,locals,show_theme:false}),
 					custom_tfoot: locals.default_custom_tfoot({
 						total:crons.length,
 						count:genericdoccount,

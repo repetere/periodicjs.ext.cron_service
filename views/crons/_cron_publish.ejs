@@ -32,7 +32,7 @@
           <label class="ts-label">Cron Interval:</label>
         </div>
         <div class="ts-col-span9">
-          <input type="text" id="cron_interval" class="ts-input ts-text-sm"  value="<%- genericdoc.cron_interval %>" >
+          <input type="text" id="cron_interval" name="cron_interval" class="ts-input ts-text-sm"  value="<%- genericdoc.cron_interval %>" >
         </div>
       </div>
       <div class="ts-row ts-form-row">
@@ -40,23 +40,37 @@
 					<label  class="ts-label" for="active">Active</label>
 				</div>
 				<div class="ts-col-span9">
-          			<% var docstatus = [{
+       			<% var docstatus = [{
 						"value":"true",
 						"label":"True"
 						},{
-						"value":"False",
+						"value":"false",
 						"label":"False"
 						}]; %>
 					<select name="active" id="active" class="ts-input">
-					  <% docstatus.forEach(function(status){
-					    %>
-					      <option <% if(genericdoc && (typeof genericdoc.active==='string' && genericdoc.active === status.value || typeof genericdoc.active==='boolean' && genericdoc.active ) ){%> selected="selected"
+					  <% docstatus.forEach(function(status){ %>
+					      <option <% if(genericdoc && (typeof genericdoc.active!=='undefined' && genericdoc.active.toString() == status.value ) ){%> selected="selected"
 					      <%}%> value="<%- status.value %>"><%- status.label %></option>
-					    <%
-					    }); %>
+					  <% }); %>
 					</select>
 				</div>
 			</div>
+      <div class="ts-row ts-form-row">
+				<div class="ts-col-span3 ">
+					<label  class="ts-label" for="active">Runtime Options</label>
+				</div>
+				<div class="ts-col-span9">
+          <textarea  id="runtime_options" name="runtime_options"  class=" noFormSubmit codemirroreditor jsonEditor ts-col-span12" style="height:60em;"><%- JSON.stringify(genericdoc.runtime_options,null,2) %></textarea>
+				</div>
+			</div>
+      <div class="ts-row ts-form-row">
+        <div class="ts-col-span3">
+          <label class="ts-label">Theme:</label>
+        </div>
+        <div class="ts-col-span9">
+          <input type="text" id="docthemelabel" disabled="disabled" class="ts-input ts-text-sm" disabled="disabled"  value="<%- genericdoc.theme %>" >
+        </div>
+      </div>
       <div class="ts-row ts-form-row">
         <div class="ts-col-span3">
           <label class="ts-label">Created:</label>

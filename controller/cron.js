@@ -103,8 +103,7 @@ var createCrons = function (req, res) {
 						return Promise.resolve(Asset.findOne({
 							name: path.basename(filedata.file.attributes.periodicFilename, '.js').replace(/_/g, '-') + '-js'
 						})).then(associatedAsset => {
-							console.log('req.body', req.body);
-
+							// console.log('req.body', req.body);
 							return {
 								title: filedata.file.attributes.periodicFilename,
 								name: filedata.file.attributes.periodicFilename,
@@ -220,6 +219,24 @@ var list_active_crons = function (req, res) {
 		}),
 		user: req.user
 	};
+	CoreController.renderView(req, res, viewtemplate, viewdata);
+};
+
+var list_all_crons = function (req, res) {
+	let cronMap = cron_lib.getCronMap();
+	let viewtemplate = {
+		viewname: 'crons/all',
+		themefileext: appSettings.templatefileextension,
+		extname: 'periodicjs.ext.cron_service'
+	};
+	let viewdata = Object.assign(req.controllerData, {
+		pagedata: {
+			title: 'All Cron',
+			toplink: '&raquo; All Crons',
+			extensions: CoreUtilities.getAdminMenu()
+		},
+		user: req.user
+	});
 	CoreController.renderView(req, res, viewtemplate, viewdata);
 };
 
@@ -641,6 +658,14 @@ module.exports = function (resources) {
 			CoreController.controller_load_model_with_default_limit(cronSettings),
 			CoreController.controller_model_query(cronSettings),
 			CoreController.controller_index(cronSettings)
+		],
+		update_item: [
+			function (req, res, next) {
+				req.body.runtime_options = JSON.parse(req.body.runtime_options || '{}');
+				next();
+			},
+			CoreController.save_revision,
+			CoreController.controller_update(cronSettings)
 		]
 	};
 	cronSettings.override = override;
@@ -650,6 +675,12 @@ module.exports = function (resources) {
 	cronController.router.post('/cron/:id/edit', asyncadminController.admin.fixCodeMirrorSubmit, CoreController.save_revision, cronController.update);
 	cronController.router.get('/cron/:id/run', cronController.loadCron, runCron);
 	cronController.router.get('/crons/active/list', list_active_crons);
+	cronController.router.get('/crons/view/all', [
+		CoreController.controller_load_model_with_count(cronSettings),
+		CoreController.controller_load_model_with_default_limit(cronSettings),
+		CoreController.controller_model_query(cronSettings),
+		list_all_crons
+	]);
 	cronController.router.get('/cron/:id/validate', cronController.loadCron, validateCron);
 	cronController.router.get('/cron/:id/mocha', cronController.loadCron, mochaCron);
 	return cronController;

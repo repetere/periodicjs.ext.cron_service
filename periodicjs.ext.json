@@ -1,5 +1,5 @@
 {
-	"periodicCompatibility": "6.5.0",
+	"periodicCompatibility": "8.0.0",
 	"periodicDependencies": [
 		{
       "extname":"periodicjs.ext.clouduploads",
