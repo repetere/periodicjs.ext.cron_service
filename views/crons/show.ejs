@@ -5,6 +5,7 @@
 <% var genericdoctypelink = 'cron' /*"user"*/ %>
 <% var genericdoctypeplurallink = 'crons' /*/users"*/ %>
 <% include ../shared/header %>
+<script type="text/javascript" src="/extensions/periodicjs.ext.cron_service/js/createcron.min.js"></script>
 <div class="ts-container">
   <div class="ts-text-container ts-genericdoc">
     <% include ../shared/genericdoc_compose_title %>
@@ -24,10 +25,10 @@
             <section class="ts-no-padding">
 				 		<form class="ts-form async-admin-ajax-forms" id="edit-crons-form" name="edit-crons-form" method="post" action="/<%- locals.adminPath %>/content/crons/<%- genericdocid %>?_method=PUT"  onsubmit="return false;" >
                 <div class="ts-row">
-                  <div class="ts-genericdoc-entry ts-col-span4 ts-screensm-col-span12 ts-screenxs-col-span12">
+                  <div class="ts-genericdoc-entry ts-col-span6 ts-screensm-col-span12 ts-screenxs-col-span12">
                     <% include _cron_publish %>
                   </div>
-                  <div class="ts-genericdoc-entry ts-col-span8 ts-screensm-col-span12 ts-screenxs-col-span12">
+                  <div class="ts-genericdoc-entry ts-col-span6 ts-screensm-col-span12 ts-screenxs-col-span12">
                     <% include _cron_file_content %>
                   </div>
                 </div>

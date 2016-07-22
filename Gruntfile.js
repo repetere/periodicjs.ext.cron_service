@@ -1,14 +1,62 @@
 /*
  * domhelper
- * http://github.com/PromiseFinancial/periodicjs.theme.promisefinancial
+ * http://github.com/yawetse/domhelper
  *
  * Copyright (c) 2014 Yaw Joseph Etse. All rights reserved.
  */
 'use strict';
-var path = require('path');
+const path = require('path');
+const testpaths = 'test/**/*.js';
 
 module.exports = function (grunt) {
 	grunt.initConfig({
+		mocha_istanbul: {
+			coveralls: {
+				src: testpaths, // multiple folders also works
+				options: {
+					coverageFolder: 'coverage', // will check both coverage folders and merge the coverage results
+					coverage: true, // this will make the grunt.event.on('coverage') event listener to be triggered
+					check: {
+						lines: 5,
+						branches: 5,
+						functions: 5,
+						statements: 5
+					},
+					// root: './lib', // define where the cover task should consider the root of libraries that are covered by tests
+					reportFormats: ['cobertura', 'lcovonly']
+				}
+			}
+		},
+		istanbul_check_coverage: {
+			default: {
+				options: {
+					coverageFolder: 'coverage', // will check both coverage folders and merge the coverage results
+					check: {
+						lines: 80,
+						branches: 80,
+						functions: 80,
+						statements: 80
+					}
+				}
+			}
+		},
+		coveralls: {
+			// Options relevant to all targets
+			options: {
+				// When true, grunt-coveralls will only print a warning rather than
+				// an error, to prevent CI builds from failing unnecessarily (e.g. if
+				// coveralls.io is down). Optional, defaults to false.
+				force: false
+			},
+
+			all: {
+				// LCOV coverage file (can be string, glob or array)
+				src: 'coverage/*.info',
+				options: {
+					// Any options for just this target
+				}
+			},
+		},
 		simplemocha: {
 			options: {
 				globals: ['should'],
@@ -18,7 +66,7 @@ module.exports = function (grunt) {
 				reporter: 'spec'
 			},
 			all: {
-				src: 'test/**/*.js'
+				src: testpaths
 			}
 		},
 		jshint: {
@@ -27,11 +75,10 @@ module.exports = function (grunt) {
 			},
 			all: [
 				'Gruntfile.js',
-				'routes.js',
-				'scripts/**/*.js',
-				'views/**/*.js',
+				'index.js',
+				'controller/**/*.js',
 				'resources/**/*.js',
-				'test/**/*.js',
+				testpaths,
 			]
 		},
 		jsbeautifier: {
@@ -42,7 +89,11 @@ module.exports = function (grunt) {
 		},
 		jsdoc: {
 			dist: {
-				src: ['lib/*.js', 'test/*.js'],
+				src: [
+					'index.js',
+					'controller/**/*.js',
+					'resources/**/*.js',
+				],
 				options: {
 					destination: 'doc/html',
 					configure: 'jsdoc.json'
@@ -64,7 +115,13 @@ module.exports = function (grunt) {
 						return finallocation;
 					}
 				}],
-				options: {}
+				options: {
+					transform: [
+						["babelify", {
+							presets: ["es2015"]
+						}]
+					]
+				},
 			}
 		},
 		uglify: {
@@ -89,40 +146,63 @@ module.exports = function (grunt) {
 				}]
 			}
 		},
+		less: {
+			development: {
+				options: {
+					sourceMap: true,
+					sourceMapURL: 'asyncadmin.css.map',
+					yuicompress: true,
+					compress: true
+				},
+				files: {
+					'public/stylesheets/cron.css': 'resources/stylesheets/cron.less',
+				}
+			}
+		},
 		copy: {
 			main: {
 				cwd: 'public',
 				expand: true,
 				src: '**/*.*',
-				dest: '../../../public/themes/periodicjs.theme.promisefinancial',
+				dest: '../../public/extensions/periodicjs.ext.cron_service',
 			},
-		},
-		less: {
-			development: {
-				options: {
-					sourceMap: true,
-					sourceMapURL: 'promisefinancial.css.map',
-					yuicompress: true,
-					compress: true
-				},
-				files: {
-					'public/stylesheets/promisefinancial.css': 'resources/stylesheets/promisefinancial.less'
-				}
-			}
 		},
 		watch: {
 			scripts: {
 				// files: '**/*.js',
 				files: [
 					'Gruntfile.js',
-					'routes.js',
-					'contoller/**/*.js',
-					'scripts/**/*.js',
-					'resources/**/*.js',
+					'index.js',
+					'controller/**/*.js',
 					'resources/**/*.less',
-					'test/**/*.js',
+					'resources/**/*.js',
+					testpaths,
 				],
 				tasks: ['lint', 'packagejs', 'less', 'copy', 'test'],
+				options: {
+					interrupt: true
+				}
+			},
+			no_tests: {
+				files: [
+					'Gruntfile.js',
+					'index.js',
+					'controller/**/*.js',
+					'resources/**/*.less',
+					'resources/**/*.js',
+				],
+				tasks: ['lint', 'packagejs', 'less', 'copy'],
+				options: {
+					interrupt: true
+				}
+			},
+			only_less: {
+				files: [
+					'Gruntfile.js',
+					'index.js',
+					'resources/**/*.less',
+				],
+				tasks: ['less', 'copy'],
 				options: {
 					interrupt: true
 				}
@@ -138,9 +218,9 @@ module.exports = function (grunt) {
 		}
 	}
 
-	grunt.registerTask('default', ['jshint', 'simplemocha']);
+	grunt.registerTask('default', ['jshint', 'mocha_istanbul']);
 	grunt.registerTask('lint', 'jshint', 'jsbeautifier');
 	grunt.registerTask('packagejs', ['browserify', 'uglify']);
 	grunt.registerTask('doc', 'jsdoc');
-	grunt.registerTask('test', 'simplemocha');
+	grunt.registerTask('test', 'mocha_istanbul');
 };
