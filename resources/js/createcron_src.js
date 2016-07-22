@@ -67,6 +67,7 @@ const initElementSelectors = () => {
 	// console.log('elements.auto_update_croninterval', elements.auto_update_croninterval);
 	if (elements.auto_update_croninterval) {
 		elements.auto_update_croninterval.addEventListener('change', auto_update_cron_string);
+		cronstring.value = elements.auto_update_croninterval.value;
 	}
 	if (has_individual_cron_items) {
 		cronstring.value = get_cronstring();
@@ -75,7 +76,6 @@ const initElementSelectors = () => {
 
 const init = () => {
 	initElementSelectors();
-	// console.log('loaded....', x);
 	// console.log('what is Proxy', Proxy);
 	window.selectedElements = elements;
 };
