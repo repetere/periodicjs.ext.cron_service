@@ -4,6 +4,7 @@
   <%}%>
   <span class="ts-button">cron check status: <%- locals.extension.cron_service.settings.cron_check_file_enabled %></span>
   <span class="ts-button">validate theme status: <%- locals.extension.cron_service.settings.validate_theme %></span>
+  <span class="ts-button">clustering enabled: <%- locals.extension.cron_service.cluster_status %></span>
   <%if(locals.extension.cron_service.settings.disable_cluster_hostnames && Array.isArray(locals.extension.cron_service.settings.disable_cluster_hostnames) && locals.extension.cron_service.settings.disable_cluster_hostnames.length>0){%>
     <span class="ts-button">disabled cron hostnames: <%- locals.extension.cron_service.settings.disable_cluster_hostnames.join() %></span>
   <%}%>
