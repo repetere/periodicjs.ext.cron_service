@@ -14,7 +14,7 @@
         "jslint": "^0.9.6",
         "minimist": "^1.2.0",
         "prettycron": "^0.10.0",
-        "promisie": "^1.0.4",
+        "promisie": "^1.5.0",
         "util-extend": "^1.0.3"
     },
     "description": "Periodic Cron Service Extension",
@@ -57,7 +57,7 @@
         "tarball": "https://registry.npmjs.org/periodicjs.ext.cron_service/-/periodicjs.ext.cron_service-1.3.2.tgz"
     },
     "engines": {
-        "node": ">~4.x"
+        "node": ">~6.x"
     },
     "gitHead": "834107236ddd520ca6273ad8f2fde3bad42e4357",
     "homepage": "https://github.com/typesettin/periodicjs.ext.cron_service",
@@ -80,5 +80,5 @@
         "postuninstall": "node uninstall.js",
         "test": "mocha -R spec --recursive"
     },
-    "version": "1.8.0"
+    "version": "2.0.0"
 }
