@@ -14,7 +14,6 @@
         "jslint": "^0.9.6",
         "minimist": "^1.2.0",
         "prettycron": "^0.10.0",
-        "promisie": "^1.5.0",
         "util-extend": "^1.0.3"
     },
     "description": "Periodic Cron Service Extension",
@@ -44,7 +43,7 @@
         "jsdoc": "3.3.0-alpha5",
         "mocha": "^2.4.5",
         "mocha-lcov-reporter": "^1.2.0",
-        "promisie": "^1.0.4",
+        "promisie": "^1.5.0",
         "proxy-polyfill": "0.1.6",
         "superagent": "^1.2.0",
         "test-periodicjs": "^8.30.50",
@@ -80,5 +79,5 @@
         "postuninstall": "node uninstall.js",
         "test": "mocha -R spec --recursive"
     },
-    "version": "2.0.0"
+    "version": "2.0.1"
 }
