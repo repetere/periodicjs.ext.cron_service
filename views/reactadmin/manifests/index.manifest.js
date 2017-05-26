@@ -11,9 +11,9 @@ module.exports = (periodic) => {
   let reactadmin = periodic.app.controller.extension.reactadmin;
   let extsettings = Object.assign({},
     periodic.app.locals.extension.reactadmin.settings, {
-    extension_overrides: Object.assign({},
-      periodic.app.locals.extension.reactadmin.settings.extension_overrides,),
-  });
+      extension_overrides: Object.assign({},
+        periodic.app.locals.extension.reactadmin.settings.extension_overrides)
+    });
   const cronManifests = autoManifests(
     schemas,
     {
