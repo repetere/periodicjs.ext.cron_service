@@ -3,7 +3,6 @@ var fs = require('fs-extra');
 var extend = require('utils-merge');
 var path = require('path');
 var appenvironment;
-var defaultExtSettings = require('./controller/default_config');
 
 module.exports = function(periodic) {
   appenvironment = periodic.settings.application.environment;
