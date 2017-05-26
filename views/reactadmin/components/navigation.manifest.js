@@ -24,7 +24,7 @@ module.exports = (periodic) => {
             {
               "component": "MenuAppLink",
               "props": {
-                "href": `${reactadmin.manifest_prefix}extension/crons/`,
+                "href": `${reactadmin.manifest_prefix}extension/crons/standard`,
                 "label": "Cron Service",
                 "id": "cron_service-crons"
               }
