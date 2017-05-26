@@ -20,8 +20,8 @@ module.exports = function(periodic) {
     }
   }
 
-  periodic.app.route(`${reactadmin.route_prefix}/crons`)
-    .get();
+  // periodic.app.route(`${reactadmin.route_prefix}/crons`)
+  //   .get();
 
   return periodic;
 };
