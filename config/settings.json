@@ -1,44 +1,9 @@
 {
-  "test": {
-    "settings": {
-      "disable_cluster_hostnames":[],
-      "pemfile_path": false,
-      "validate_theme": true
+	"development":{
+    "jwt": {
+    	"expire_period":"days",
+    	"expire_duration":7,
+    	"custom_secret":false
     }
-  },
-  "dev_remote":{
-    "settings":{
-      "disable_cluster_hostnames":[],
-      "pemfile_path": false,
-      "validate_theme": true
-    }
-  },
-  "development":{
-    "settings":{
-      "disable_cluster_hostnames":[],
-      "pemfile_path": false,
-      "validate_theme": true
-    }
-  },
-  "qa":{
-    "settings":{
-      "disable_cluster_hostnames":[],
-      "pemfile_path": false,
-      "validate_theme": true
-    }
-  },
-  "staging":{
-    "settings":{
-      "disable_cluster_hostnames":[],
-      "pemfile_path": false,
-      "validate_theme": true
-    }
-  },
-  "production":{
-    "settings":{
-      "disable_cluster_hostnames":[],
-      "pemfile_path": false,
-      "validate_theme": true
-    }
-  }
+	}
 }

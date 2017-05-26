@@ -1,25 +1,27 @@
 'use strict';
-const fs = require('fs-extra');
-const path = require('path');
-const Errorie = require('errorie');
-let cronServiceRouter;
+var fs = require('fs-extra');
+var extend = require('utils-merge');
+var path = require('path');
+var appenvironment;
+var defaultExtSettings = require('./controller/default_config');
 
-var extension = function (periodic) {
-	try {
-		//configure locals
-		periodic = require('./utility/locals')(periodic);
-		periodic.app.controller.extension.cron_service.utility = require('./utility/index.js')(periodic);
-		periodic.app.controller.extension.cron_service.controller = Object.assign({}, require('./controller/index')(periodic));
-		cronServiceRouter = require('./router/index')(periodic);
-		periodic.app.use(cronServiceRouter);
-	}
-	catch (e) {
-		throw new Errorie({
-			name: 'Cron Service Extension',
-			message: 'Config error - ' + e.message
-		});
-	}
-	return periodic;
+module.exports = function(periodic) {
+  appenvironment = periodic.settings.application.environment;
+  var cronRouter = periodic.express.Router();
+  var userroleController = periodic.app.controller.native.userrole;
+
+  const reUtilPath = path.join(__dirname, '../../node_modules/periodicjs.ext.reactadmin/utility/locals.js');
+  let reactadmin = { route_prefix: '/r-admin' };
+
+  for (var x in periodic.settings.extconf.extensions) {
+    if (periodic.settings.extconf.extensions[x].name === 'periodicjs.ext.reactadmin') {
+      const reactadminUtil = require(reUtilPath)(periodic).app.locals.extension.reactadmin;
+      reactadmin = reactadminUtil;
+    }
+  }
+
+  periodic.app.route(`${reactadmin.route_prefix}/crons`)
+    .get();
+
+  return periodic;
 };
-
-module.exports = extension;

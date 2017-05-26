@@ -2,18 +2,20 @@
 
 var Extensions = require('periodicjs.core.extensions'),
 	ExtensionCore = new Extensions({
-		dirname: __dirname
+		dirname: __dirname 
 	});
 
 ExtensionCore.install({
+		// enabled:false,
+		moveafter:'periodicjs.ext.clouduploads'
 	},
-	function (err, status) {
-		if (err) {
+	function(err,status){
+		if(err){
 			throw new Error(err);
 		}
-		else {
+		else{
 			console.log(status);
 		}
-	});
+});
 // $ npm install --skip_ext_conf
 // $ npm intsall --enable_ext

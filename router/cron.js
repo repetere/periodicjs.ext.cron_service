@@ -16,5 +16,3 @@ module.exports = function(resources) {
 
   return CronRouter;
 };
-
-  
