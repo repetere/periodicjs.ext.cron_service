@@ -11,9 +11,6 @@
     "manifests": [
       "node_modules/periodicjs.ext.cron_service/views/reactadmin/manifests"
     ],
-    "unauthenticated_manifests": [
-      "node_modules/periodicjs.ext.cron_service/views/reactadmin/unauthenticated_manifests"
-    ],
     "navigation": "node_modules/periodicjs.ext.cron_service/views/reactadmin/components/navigation.manifest.js"
   }
 }

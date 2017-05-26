@@ -674,15 +674,21 @@ module.exports = function (resources) {
 	let cronController = CoreController.controller_routes(cronSettings);
 	let asyncadminController = resources.app.controller.extension.asyncadmin;
 	cronController.router.post('/crons/setactive/:id/:status', cronController.loadCron, set_cron_status, updateCronStatus);
-	cronController.router.post('/cron/:id/edit', asyncadminController.admin.fixCodeMirrorSubmit, CoreController.save_revision, cronController.update);
+	// cronController.router.post('/cron/:id/edit', asyncadminController.admin.fixCodeMirrorSubmit, CoreController.save_revision, cronController.update);
 	cronController.router.get('/cron/:id/run', cronController.loadCron, runCron);
 	cronController.router.get('/crons/active/list', list_active_crons);
-	cronController.router.get('/crons/view/all', [
+	cronController.router.get('/crons/view/all',
 		CoreController.controller_load_model_with_count(cronSettings),
 		CoreController.controller_load_model_with_default_limit(cronSettings),
 		CoreController.controller_model_query(cronSettings),
-		list_all_crons
-	]);
+		(req, res) => {
+			delete req.controllerData.authorization_header;
+			res.send((req.controllerData.useSuccessWrapper) ? {
+				result: 'success',
+				data: req.controllerData,
+			} : req.controllerData);
+		}
+	);
 	cronController.router.get('/cron/:id/validate', cronController.loadCron, validateCron);
 	cronController.router.get('/cron/:id/mocha', cronController.loadCron, mochaCron);
 	return cronController;
