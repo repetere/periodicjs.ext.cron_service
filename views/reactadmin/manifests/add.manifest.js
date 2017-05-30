@@ -6,7 +6,7 @@ module.exports = (periodic) => {
 
   return {
     containers: {
-      [`${reactadmin.manifest_prefix}extension/crons/add`]: {
+      [`${reactadmin.manifest_prefix}extension/cron/add`]: {
         'layout': {
           'component': 'Hero',
           'props': {
@@ -27,7 +27,7 @@ module.exports = (periodic) => {
                 'children': [{
                   'component': 'Column',
                   'props': {
-                    'size': 'is3',
+                    'size': 'is1',
                   },
                 },
                 {
@@ -43,56 +43,70 @@ module.exports = (periodic) => {
                     'children': 'Add Cron',
                   }, 
                   {
-                    component: 'ResponsiveForm',
-                    props: {
-                      onSubmit: {
-                        url: '/psa/fileupload/id_photo',
-                        options: {
-                          method: 'POST',
-                        },
-                        successProps: '/verification',
-                        successCallback: 'func:this.props.reduxRouter.push',
-                      },
-                      blockPageUI: true,
-                      flattenFormData: true,
-                      footergroups: false,
-                      formgroups: [{
-                          gridProps: {
+                    component: 'ResponsiveCard',
+                    children: [
+                      {
+                        component: 'ResponsiveForm',
+                        props: {
+                          onSubmit:{
+                            url:'/crons?format=json&unflatten=true&updateprofile=true&updatecallback=true&handleupload=true',
+                            options:{
+                              method:'POST',
+                            },
+                            success: true,
+                            successCallback: 'func:this.props.reduxRouter.push',
                           },
-                          formElements: [{
-                            type: 'file',
-                            name: 'id_photo',
-                          }, ],
-                        },
-                        {
-                          gridProps: {
-                            className: '__cis_submit_wrapper',
-                          },
-                          formElements: [
-
+                          flattenFormData: true,
+                          footergroups: false,
+                          formgroups:[
+                            // {
+                            //   formElements: [
+                            //     {
+                            //       label: 'Name',
+                            //       name: 'name'
+                            //     },
+                            //     {
+                            //       label: 'Theme',
+                            //       name: 'theme'
+                            //     },
+                            //   ],
+                            // },
                             {
-                              type: 'submit',
-                              value: 'Submit & Continue',
-                              layoutProps: {
-                                size: 'isNarrow',
-                                className: '__cis_submit_btn',
-                              },
-                              passProps: {
-                                size: 'isLarge',
-                                className: '__cis_arrow_right',
-                              },
+                              formElements: [
+                                {
+                                  label: 'Interval',
+                                  name: 'cron_interval'
+                                },
+                              ],
+                            },
+                            {
+                              formElements: [
+                                {
+                                  type: 'file',
+                                  label: 'Upload Script',
+                                  name: 'cron_file'
+                                },
+                              ],
+                            },
+                            {
+                              formElements:[
+                                {
+                                  type:'submit',
+                                  value:'Save',
+                                },
+                              ],
                             },
                           ],
                         },
-                      ],
-                    },
+                      },
+                    ],
                   },
                   ],
                 },
                 {
                   'component': 'Column',
                   'props': {
-                    'size': 'is3',
+                    'size': 'is1',
                   },
                 },
                 ],
@@ -101,7 +115,7 @@ module.exports = (periodic) => {
           }, ],
         },
         'resources': {
-          // oauth2data: `${reactadmin.manifest_prefix}api/oauth2async/authorize?format=json`,
+          // crondata: `${reactadmin.manifest_prefix}cron/view/:id?format=json`,
         },
         'onFinish': 'render',
       },

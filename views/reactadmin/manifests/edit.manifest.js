@@ -27,7 +27,7 @@ module.exports = (periodic) => {
                 'children': [{
                   'component': 'Column',
                   'props': {
-                    'size': 'is3',
+                    'size': 'is1',
                   },
                 },
                 {
@@ -40,59 +40,108 @@ module.exports = (periodic) => {
                         'textAlign': 'center',
                       },
                     },
-                    'children': 'Add Cron',
+                    'children': 'Edit Cron',
                   }, 
                   {
-                    component: 'ResponsiveForm',
-                    props: {
-                      onSubmit: {
-                        url: '/psa/fileupload/id_photo',
-                        options: {
-                          method: 'POST',
-                        },
-                        successProps: '/verification',
-                        successCallback: 'func:this.props.reduxRouter.push',
-                      },
-                      blockPageUI: true,
-                      flattenFormData: true,
-                      footergroups: false,
-                      formgroups: [{
-                          gridProps: {
+                    component: 'ResponsiveCard',
+                    children: [
+                      {
+                        component: 'ResponsiveForm',
+                        props: {
+                          onSubmit:{
+                            url:'/crons/:id',
+                            options:{
+                              method:'PUT',
+                            },
+                            params: [
+                              { 'key': ':id', 'val': '_id', },
+                            ],
+                            success: true,
+                            successCallback:'func:this.props.refresh',
                           },
-                          formElements: [{
-                            type: 'file',
-                            name: 'id_photo',
+                          'hiddenFields':[{
+                            'form_name':'docid',
+                            'form_val':'_id',
                           }, ],
-                        },
-                        {
-                          gridProps: {
-                            className: '__cis_submit_wrapper',
-                          },
-                          formElements: [
-
+                          flattenFormData: true,
+                          formgroups:[
                             {
-                              type: 'submit',
-                              value: 'Submit & Continue',
-                              layoutProps: {
-                                size: 'isNarrow',
-                                className: '__cis_submit_btn',
-                              },
-                              passProps: {
-                                size: 'isLarge',
-                                className: '__cis_arrow_right',
-                              },
+                              formElements: [
+                                {
+                                  label: 'Name',
+                                  name: 'name'
+                                },
+                                {
+                                  label: 'Theme',
+                                  name: 'theme'
+                                },
+                              ],
+                            },
+                            {
+                              formElements: [
+                                {
+                                  label: 'Author',
+                                  name: 'author'
+                                },
+                                {
+                                  label: 'Interval',
+                                  name: 'cron_interval'
+                                },
+                              ],
+                            },
+                            {
+                              formElements: [
+                                {
+                                  label: 'Active',
+                                  name: 'active'
+                                },
+                              ],
+                            },
+                            {
+                              formElements:[
+                                {
+                                  type:'submit',
+                                  value:'Save',
+                                },
+                                {
+                                  type: 'layout',
+                                  value: {
+                                    component: 'ResponsiveButton',
+                                    thisprops: {
+                                      onclickPropObject: ['formdata'],
+                                    },
+                                    props: {
+                                      onClick: 'func:this.props.fetchAction',
+                                      onclickBaseUrl: '/cron/:id/run',
+                                      onclickLinkParams: [
+                                        { 'key': ':id', 'val': '_id', },
+                                      ],
+                                      'fetchProps': {
+                                        'method': 'GET',
+                                      },
+                                      buttonProps: {
+                                        size: 'isPrimary',
+                                      }
+                                    },
+                                    children: 'Run',
+                                  },
+                                }
+                              ],
                             },
                           ],
                         },
-                      ],
-                    },
+                        asyncprops: {
+                          formdata: ['crondata', 'cron'],
+                        },
+                      },
+                    ],
                   },
                   ],
                 },
                 {
                   'component': 'Column',
                   'props': {
-                    'size': 'is3',
+                    'size': 'is1',
                   },
                 },
                 ],
@@ -101,7 +150,7 @@ module.exports = (periodic) => {
           }, ],
         },
         'resources': {
-          // oauth2data: `${reactadmin.manifest_prefix}api/oauth2async/authorize?format=json`,
+          crondata: `${reactadmin.manifest_prefix}cron/:id/view?format=json`,
         },
         'onFinish': 'render',
       },

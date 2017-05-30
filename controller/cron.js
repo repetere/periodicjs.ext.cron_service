@@ -70,7 +70,7 @@ var createFileSignatures = function (options, cb) {
  * @param {string} req.body.interval The interval at which the cron should be run
  * @param  {Object} res Express response object
  */
-var createCrons = function (req, res) {
+var createCrons = function (req, res, next) {
 	try {
 		let files = (Array.isArray(req.controllerData.files)) ? req.controllerData.files : [req.controllerData.files];
 		//Tests that files are a javascript mimetype
@@ -111,7 +111,7 @@ var createCrons = function (req, res) {
 								content: 'cron',
 								asset: associatedAsset._id,
 								asset_signature: filedata.signature,
-								cron_interval: req.body.interval || '00 00 00 * * *',
+								cron_interval: req.body.cron_interval || '00 00 00 * * *',
 								runtime_options: JSON.parse(req.body.runtime_options || '{}'),
 								theme: (typeof themeName === 'string') ? themeName : undefined
 							};
@@ -154,14 +154,16 @@ var createCrons = function (req, res) {
 					}
 				})
 				.then(crons => {
-					res.send({
-						result: 'success',
-						data: {
-							crons: crons
-						}
-					});
+					next();
+					// res.send({
+					// 	result: 'success',
+					// 	data: {
+					// 		crons: crons
+					// 	}
+					// });
 				})
 				.catch(e => {
+					console.log('error in catch: ', e);
 					CoreController.handleDocumentQueryErrorResponse({
 						err: e,
 						res: res,
@@ -178,68 +180,13 @@ var createCrons = function (req, res) {
 		}
 	}
 	catch (e) {
+		console.log('error in bottom catch: ', e);
 		CoreController.handleDocumentQueryErrorResponse({
 			err: e,
 			res: res,
 			req: req
 		});
 	}
-};
-
-var cron_create_index = function (req, res) {
-	let viewtemplate = {
-		viewname: 'crons/new',
-		themefileext: appSettings.templatefileextension,
-		extname: 'periodicjs.ext.cron_service'
-	};
-	let viewdata = {
-		pagedata: {
-			title: 'Create Cron',
-			toplink: '&raquo; <a href="/"></a> &raquo; Dashboard &raquo; Cron Create',
-			extensions: CoreUtilities.getAdminMenu()
-		},
-		user: req.user
-	};
-	CoreController.renderView(req, res, viewtemplate, viewdata);
-};
-
-var list_active_crons = function (req, res) {
-	let cronMap = cron_lib.getCronMap();
-	let viewtemplate = {
-		viewname: 'crons/active',
-		themefileext: appSettings.templatefileextension,
-		extname: 'periodicjs.ext.cron_service'
-	};
-	let viewdata = {
-		pagedata: {
-			title: 'Active Cron',
-			toplink: '&raquo; Active Crons',
-			extensions: CoreUtilities.getAdminMenu()
-		},
-		crons: Object.keys(cronMap).map(function (cronmapobj) {
-			return cronMap[cronmapobj].cron;
-		}),
-		user: req.user
-	};
-	CoreController.renderView(req, res, viewtemplate, viewdata);
-};
-
-var list_all_crons = function (req, res) {
-	let cronMap = cron_lib.getCronMap();
-	let viewtemplate = {
-		viewname: 'crons/all',
-		themefileext: appSettings.templatefileextension,
-		extname: 'periodicjs.ext.cron_service'
-	};
-	let viewdata = Object.assign(req.controllerData, {
-		pagedata: {
-			title: 'All Cron',
-			toplink: '&raquo; All Crons',
-			extensions: CoreUtilities.getAdminMenu()
-		},
-		user: req.user
-	});
-	CoreController.renderView(req, res, viewtemplate, viewdata);
 };
 
 /**
@@ -404,12 +351,13 @@ var runCron = function (req, res) {
 			}
 		})
 		.then(() => {
-			res.send({
-				result: 'success',
-				data: {
-					message: `Finished running cron ${ cron._id }`
-				}
-			});
+			next();
+			// res.send({
+			// 	result: 'success',
+			// 	data: {
+			// 		message: `Finished running cron ${ cron._id }`
+			// 	}
+			// });
 		})
 		.catch(e => {
 			CoreController.handleDocumentQueryErrorResponse({
@@ -477,9 +425,7 @@ var validateCron = function (req, res) {
 			.then(result => {
 				res.send({
 					result: 'success',
-					data: {
-						message: result
-					}
+					data: result
 				});
 				removeNonActiveCronAfterProcess(cron);
 			})
@@ -615,6 +561,15 @@ var mochaCron = function (req, res) {
 	}
 };
 
+const handleResponseData = function (req, res) {
+	req.controllerData = req.controllerData || {};
+	delete req.controllerData.authorization_header;
+	res.send((req.controllerData.useSuccessWrapper) ? {
+		result: 'success',
+		data: req.controllerData,
+	} : req.controllerData);
+};
+
 module.exports = function (resources) {
 	cron_lib = require('../lib/crons')(resources);
 	digest = cron_lib.digest;
@@ -631,6 +586,8 @@ module.exports = function (resources) {
 	pemfile = fs.readFileSync(resources.app.controller.extension.cron_service.settings.pemfile_path, 'utf8');
 	cloudUploads = resources.app.controller.extension.cloudupload.cloudupload;
 	periodic = resources;
+	const RAHelperController = resources.app.controller.extension.reactadmin.controller.helper;
+	const oauth2authController = resources.app.controller.extension.oauth2server.auth;
 	let cronSettings = {
 		model_name: 'cron',
 		model: Cron,
@@ -645,10 +602,26 @@ module.exports = function (resources) {
 		extname: 'periodicjs.ext.cron_service'
 	};
 	let override = {
-		create_item: [setCronFilePath, assetController.multiupload, assetController.create_assets_from_files, createCrons],
-		create_index: [cron_create_index],
-		delete_item: [deleteCron],
+		create_item: [
+			oauth2authController.ensureApiAuthenticated,
+			RAHelperController.handleFileUpload,
+			RAHelperController.handleFileAssets,
+			RAHelperController.fixCodeMirrorSubmit,
+			RAHelperController.fixFlattenedSubmit,
+			setCronFilePath,
+			createCrons,
+			(req, res, next) => {
+				return res.status(200).send({
+					status: 200,
+					response: 'success',
+					successCallback: 'func:this.props.reduxRouter.push',
+					pathname: '/extension/crons',
+				});
+		}],
+		// create_index: [cron_create_index],
+		delete_item: [oauth2authController.ensureApiAuthenticated, deleteCron],
 		get_index: [
+			oauth2authController.ensureApiAuthenticated,
 			function (req, res, next) {
 				req.controllerData = req.controllerData || {};
 				req.controllerData.model_query = (typeof themeName === 'string') ? {
@@ -662,6 +635,7 @@ module.exports = function (resources) {
 			CoreController.controller_index(cronSettings)
 		],
 		update_item: [
+			oauth2authController.ensureApiAuthenticated,
 			function (req, res, next) {
 				req.body.runtime_options = JSON.parse(req.body.runtime_options || '{}');
 				next();
@@ -673,23 +647,26 @@ module.exports = function (resources) {
 	cronSettings.override = override;
 	let cronController = CoreController.controller_routes(cronSettings);
 	let asyncadminController = resources.app.controller.extension.asyncadmin;
+
+  // cronController.router.use(oauth2authController.ensureApiAuthenticated);
 	cronController.router.post('/crons/setactive/:id/:status', cronController.loadCron, set_cron_status, updateCronStatus);
-	// cronController.router.post('/cron/:id/edit', asyncadminController.admin.fixCodeMirrorSubmit, CoreController.save_revision, cronController.update);
-	cronController.router.get('/cron/:id/run', cronController.loadCron, runCron);
-	cronController.router.get('/crons/active/list', list_active_crons);
+	cronController.router.get('/cron/:id/validate', cronController.loadCron, validateCron);
+	cronController.router.get('/cron/:id/mocha', cronController.loadCron, mochaCron);
+	cronController.router.get('/cron/:id/run', cronController.loadCron, runCron, handleResponseData);
+	cronController.router.get('/cron/:id/view',
+		(req, res, next) => {
+			req.controllerData = req.controllerData || {};
+			Cron.findOne({ _id: req.params.id })
+				.then(result => {
+					req.controllerData.cron = result;
+					return next();
+				});
+		}, handleResponseData);
 	cronController.router.get('/crons/view/all',
 		CoreController.controller_load_model_with_count(cronSettings),
 		CoreController.controller_load_model_with_default_limit(cronSettings),
 		CoreController.controller_model_query(cronSettings),
-		(req, res) => {
-			delete req.controllerData.authorization_header;
-			res.send((req.controllerData.useSuccessWrapper) ? {
-				result: 'success',
-				data: req.controllerData,
-			} : req.controllerData);
-		}
-	);
-	cronController.router.get('/cron/:id/validate', cronController.loadCron, validateCron);
-	cronController.router.get('/cron/:id/mocha', cronController.loadCron, mochaCron);
+		handleResponseData);
+
 	return cronController;
 };
