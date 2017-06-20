@@ -117,11 +117,15 @@ module.exports = (periodic) => {
                                         { 'key': ':id', 'val': '_id', },
                                       ],
                                       'fetchProps': {
-                                        'method': 'GET',
+                                        'method': 'POST',
                                       },
                                       buttonProps: {
                                         size: 'isPrimary',
                                       }
+                                    },
+                                    'successProps':{
+                                      'success':true,
+                                      'successCallback':'func:this.props.refresh',
                                     },
                                     children: 'Run',
                                   },

@@ -49,7 +49,7 @@ module.exports = (periodic) => {
                         component: 'ResponsiveForm',
                         props: {
                           onSubmit:{
-                            url:'/crons?format=json&unflatten=true&updateprofile=true&updatecallback=true&handleupload=true',
+                            url:'/crons?format=json&unflatten=true&updateprofile=true&updatecallback=true&handleupload=true&forcequerytobody=true&encryptfiles=true',
                             options:{
                               method:'POST',
                             },

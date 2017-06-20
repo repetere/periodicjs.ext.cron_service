@@ -163,7 +163,6 @@ var createCrons = function (req, res, next) {
 					// });
 				})
 				.catch(e => {
-					console.log('error in catch: ', e);
 					CoreController.handleDocumentQueryErrorResponse({
 						err: e,
 						res: res,
@@ -180,7 +179,6 @@ var createCrons = function (req, res, next) {
 		}
 	}
 	catch (e) {
-		console.log('error in bottom catch: ', e);
 		CoreController.handleDocumentQueryErrorResponse({
 			err: e,
 			res: res,
@@ -648,11 +646,11 @@ module.exports = function (resources) {
 	let cronController = CoreController.controller_routes(cronSettings);
 	let asyncadminController = resources.app.controller.extension.asyncadmin;
 
-  // cronController.router.use(oauth2authController.ensureApiAuthenticated);
+  cronController.router.use(oauth2authController.ensureApiAuthenticated);
+	cronController.router.post('/cron/:id/run', cronController.loadCron, runCron, handleResponseData);
 	cronController.router.post('/crons/setactive/:id/:status', cronController.loadCron, set_cron_status, updateCronStatus);
 	cronController.router.get('/cron/:id/validate', cronController.loadCron, validateCron);
 	cronController.router.get('/cron/:id/mocha', cronController.loadCron, mochaCron);
-	cronController.router.get('/cron/:id/run', cronController.loadCron, runCron, handleResponseData);
 	cronController.router.get('/cron/:id/view',
 		(req, res, next) => {
 			req.controllerData = req.controllerData || {};
@@ -667,6 +665,5 @@ module.exports = function (resources) {
 		CoreController.controller_load_model_with_default_limit(cronSettings),
 		CoreController.controller_model_query(cronSettings),
 		handleResponseData);
-
 	return cronController;
 };
