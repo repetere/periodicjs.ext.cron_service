@@ -646,9 +646,9 @@ module.exports = function (resources) {
 	let cronController = CoreController.controller_routes(cronSettings);
 	let asyncadminController = resources.app.controller.extension.asyncadmin;
 
-  cronController.router.use(oauth2authController.ensureApiAuthenticated);
-	cronController.router.post('/cron/:id/run', cronController.loadCron, runCron, handleResponseData);
-	cronController.router.post('/crons/setactive/:id/:status', cronController.loadCron, set_cron_status, updateCronStatus);
+  // cronController.router.use(oauth2authController.ensureApiAuthenticated);
+	cronController.router.post('/cron/:id/run', oauth2authController.ensureApiAuthenticated, cronController.loadCron, runCron, handleResponseData);
+	cronController.router.post('/crons/setactive/:id/:status', oauth2authController.ensureApiAuthenticated, cronController.loadCron, set_cron_status, updateCronStatus);
 	cronController.router.get('/cron/:id/validate', cronController.loadCron, validateCron);
 	cronController.router.get('/cron/:id/mocha', cronController.loadCron, mochaCron);
 	cronController.router.get('/cron/:id/view',
