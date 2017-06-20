@@ -326,7 +326,7 @@ var deleteCron = function (req, res) {
 	}
 };
 
-var runCron = function (req, res) {
+var runCron = function (req, res, next) {
 	let cron = req.controllerData.cron.toJSON();
 	let downloadOptions = [cron];
 	downloadRemoteFiles(downloadOptions)

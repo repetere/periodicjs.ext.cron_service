@@ -85,5 +85,5 @@
         "postuninstall": "node uninstall.js",
         "test": "mocha -R spec --recursive"
     },
-    "version": "3.2.2"
+    "version": "3.2.3"
 }
