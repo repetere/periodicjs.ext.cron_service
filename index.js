@@ -12,11 +12,9 @@ module.exports = function(periodic) {
   const reUtilPath = path.join(__dirname, '../../node_modules/periodicjs.ext.reactadmin/utility/locals.js');
   let reactadmin = { route_prefix: '/r-admin' };
   periodic = require('./utility/locals')(periodic);
-  periodic.app.controller.extension.cron_service.utility = require('./utility/index.js')(periodic);
   periodic.app.controller.extension.cron_service = Object.assign({}, periodic.app.controller.extension.cron_service, {
     controller: require('./controller/index')(periodic)
   });
-  periodic.app.controller.extension.cron_service.controller = Object.assign({}, require('./controller/index')(periodic));
   periodic.app.controller.extension.cron_service.utility = require('./utility/index.js')(periodic);
   let cronServiceRouter = require('./router/index')(periodic);
 
