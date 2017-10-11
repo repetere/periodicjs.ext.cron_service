@@ -81,8 +81,8 @@
         "url": "git+https://github.com/typesettin/periodicjs.ext.cron_service.git"
     },
     "scripts": {
-         "postinstall": "cd ../../../ && periodicjs aex periodicjs.ext.cron_service",
-    "postuninstall": "cd ../../../ && periodicjs rex periodicjs.ext.cron_service",
+         "postinstall": "cd ../../../ && periodicjs aex @digifi/cron_service",
+    "postuninstall": "cd ../../../ && periodicjs rex @digifi/cron_service",
         "test": "mocha -R spec --recursive"
     },
     "version": "3.3.2"
