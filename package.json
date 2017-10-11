@@ -59,7 +59,7 @@
         "node": ">~6.x"
     },
     "gitHead": "834107236ddd520ca6273ad8f2fde3bad42e4357",
-    "homepage": "https://github.com/typesettin/periodicjs.ext.cron_service",
+    "homepage": "https://github.com/digifi-io/cron_service",
     "keywords": [
         "periodicjs"
     ],
@@ -81,9 +81,9 @@
         "url": "git+https://github.com/typesettin/periodicjs.ext.cron_service.git"
     },
     "scripts": {
-        "postinstall": "node install.js",
-        "postuninstall": "node uninstall.js",
+         "postinstall": "cd ../../../ && periodicjs aex periodicjs.ext.cron_service",
+    "postuninstall": "cd ../../../ && periodicjs rex periodicjs.ext.cron_service",
         "test": "mocha -R spec --recursive"
     },
-    "version": "3.3.1"
+    "version": "3.3.2"
 }
