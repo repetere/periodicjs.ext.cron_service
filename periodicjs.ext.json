@@ -4,5 +4,11 @@
   "periodic_type": 8,
   "periodic_priority": 10,
   "periodic_config": {
+    "periodicjs_ext_reactapp": {
+      "manifests": [
+        "node_modules/@digifi/cron_service/views/reactapp/manifests"
+      ],
+      "navigation": "node_modules/@digifi/cron_service/views/reactapp/components/navigation.manifest.js"
+    }
   }
 }
