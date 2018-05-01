@@ -59,7 +59,7 @@
         "node": ">~6.x"
     },
     "gitHead": "834107236ddd520ca6273ad8f2fde3bad42e4357",
-    "homepage": "https://github.com/digifi-io/cron_service",
+    "homepage": "https://github.com/typesettin/periodicjs.ext.cron_service",
     "keywords": [
         "periodicjs"
     ],
@@ -74,16 +74,16 @@
             "name": "markwaldron"
         }
     ],
-    "name": "@digifi/cron_service",
+    "name": "periodicjs.ext.cron_service",
     "optionalDependencies": {},
     "repository": {
         "type": "git",
         "url": "git+https://github.com/typesettin/periodicjs.ext.cron_service.git"
     },
     "scripts": {
-         "postinstall": "cd ../../../ && periodicjs aex @digifi/cron_service",
-    "postuninstall": "cd ../../../ && periodicjs rex @digifi/cron_service",
+        "postinstall": "node install.js",
+        "postuninstall": "node uninstall.js",
         "test": "mocha -R spec --recursive"
     },
-    "version": "3.3.4"
+    "version": "3.3.0"
 }
