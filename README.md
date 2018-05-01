@@ -1,8 +1,8 @@
-# periodicjs.ext.cron_service [![Coverage Status](https://coveralls.io/repos/github/githubUserOrgName/periodicjs.ext.cron_service/badge.svg?branch=master)](https://coveralls.io/github/githubUserOrgName/periodicjs.ext.cron_service?branch=master) [![Build Status](https://travis-ci.org/githubUserOrgName/periodicjs.ext.cron_service.svg?branch=master)](https://travis-ci.org/githubUserOrgName/periodicjs.ext.cron_service)
+# periodicjs.ext.cron_service [![Coverage Status](https://coveralls.io/repos/github/repetere/periodicjs.ext.cron_service/badge.svg?branch=master)](https://coveralls.io/github/repetere/periodicjs.ext.cron_service?branch=master) [![Build Status](https://travis-ci.org/repetere/periodicjs.ext.cron_service.svg?branch=master)](https://travis-ci.org/repetere/periodicjs.ext.cron_service)
 
-A simple extension.
+Periodic Cron Service Extension.
 
-[API Documentation](https://github.com/githubUserOrgName/periodicjs.ext.cron_service/blob/master/doc/api.md)
+[API Documentation](https://github.com/repetere/periodicjs.ext.cron_service/blob/master/doc/api.md)
 
 ## Usage
 

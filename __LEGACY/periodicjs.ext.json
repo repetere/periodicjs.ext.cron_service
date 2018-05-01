@@ -1,16 +1,14 @@
 {
-  "periodicCompatibility": "9.0.0",
-  "periodicDependencies": [{
-      "extname": "periodicjs.ext.clouduploads",
-      "version": "~6.0.4"
-  }, {
-      "extname": "periodicjs.ext.reactadmin",
-      "version": "~1.3.0"
-  }],
-  "periodicjs.ext.reactadmin": {
-    "manifests": [
-      "node_modules/periodicjs.ext.cron_service/views/reactadmin/manifests"
-    ],
-    "navigation": "node_modules/periodicjs.ext.cron_service/views/reactadmin/components/navigation.manifest.js"
+  "periodic_compatibility": "10.0.0",
+  "periodic_dependencies": [],
+  "periodic_type": 8,
+  "periodic_priority": 10,
+  "periodic_config": {
+    "periodicjs_ext_reactapp": {
+      "manifests": [
+        "node_modules/@digifi/cron_service/views/reactapp/manifests"
+      ],
+      "navigation": "node_modules/@digifi/cron_service/views/reactapp/components/navigation.manifest.js"
+    }
   }
 }
