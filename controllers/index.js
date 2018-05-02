@@ -1,9 +1,7 @@
 'use strict';
 const periodic = require('periodicjs');
+const cron = require('./cron');
 
 module.exports = {
-  test: (req, res, next) => {
-    periodic.logger.silly('test middleware');
-    next();
-  }
+  cron,
 }
