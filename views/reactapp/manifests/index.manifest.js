@@ -41,7 +41,7 @@ module.exports = {
                     component: 'ResponsiveButton',
                     props: {
                       onClick: 'func:this.props.reduxRouter.push',
-                      onclickBaseUrl: '/extension/cron/add',
+                      onclickBaseUrl: '/extension/crons/add',
                       buttonProps: {
                         size: 'isPrimary',
                       }
@@ -131,10 +131,30 @@ module.exports = {
                                     color: 'isSuccess',
                                   },
                                   onClick: 'func:this.props.fetchAction',
-                                  onclickBaseUrl: '/crons/setactive/:id/:status',
+                                  onclickBaseUrl: '/extension/crons/setactive/:id/:status',
                                   onclickLinkParams: [
                                     { 'key': ':id', 'val': '_id', },
                                     { 'key': ':status', 'val': 'active' }
+                                  ],
+                                  'fetchProps': {
+                                    'method': 'POST',
+                                  },
+                                  'successProps': {
+                                    'success': true,
+                                    'successCallback': 'func:this.props.refresh',
+                                  },
+                                },
+                              },
+                              {
+                                children: 'Run',
+                                passProps: {
+                                  buttonProps: {
+                                    color: 'isInfo',
+                                  },
+                                  onClick: 'func:this.props.fetchAction',
+                                  onclickBaseUrl: '/extension/crons/:id/run',
+                                  onclickLinkParams: [
+                                    { 'key': ':id', 'val': '_id', },
                                   ],
                                   'fetchProps': {
                                     'method': 'POST',
@@ -152,7 +172,7 @@ module.exports = {
                                     color: 'isInfo',
                                   },
                                   onClick: 'func:this.props.fetchAction',
-                                  onclickBaseUrl: '/cron/:id/validate',
+                                  onclickBaseUrl: '/extension/crons/:id/validate',
                                   onclickLinkParams: [
                                     { 'key': ':id', 'val': '_id', },
                                   ],
@@ -172,7 +192,7 @@ module.exports = {
                                     color: 'isWarning',
                                   },
                                   onClick: 'func:this.props.fetchAction',
-                                  onclickBaseUrl: '/cron/:id/mocha',
+                                  onclickBaseUrl: '/extension/crons/:id/mocha',
                                   onclickLinkParams: [
                                     { 'key': ':id', 'val': '_id', },
                                   ],
@@ -196,7 +216,7 @@ module.exports = {
                                     color: 'isDanger',
                                   },
                                   onClick: 'func:this.props.fetchAction',
-                                  onclickBaseUrl: '/crons/:id',
+                                  onclickBaseUrl: '/extension/crons/:id',
                                   onclickLinkParams: [ { 'key': ':id', 'val': '_id', } ],
                                   'fetchProps': {
                                     'method': 'DELETE',
@@ -213,7 +233,7 @@ module.exports = {
                         },
                         asyncprops: {
                           'rows': [
-                            'crondata', 'crons',
+                            'crondata', 'data','standard_crons',
                           ],
                         },
                       },
@@ -227,7 +247,7 @@ module.exports = {
       },
       'resources': {
         // crondata: `${reactadmin.manifest_prefix}crons/view/all?format=json`,
-        crondata:`${reactapp.manifest_prefix}contentdata/crons/view/all?format=json`,
+        crondata:`${reactapp.manifest_prefix}contentdata/standard_crons?format=json`,
       },
       'onFinish': 'render',
     },

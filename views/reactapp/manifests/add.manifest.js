@@ -1,124 +1,162 @@
 'use strict';
-const path = require('path');
+const periodic = require('periodicjs');
+const reactappLocals = periodic.locals.extensions.get('periodicjs.ext.reactapp');
+const reactapp = reactappLocals.reactapp();
+const cronExample = require('../components/cron_example');
 
-module.exports = (periodic) => {
-  // let reactadmin = periodic.app.controller.extension.reactadmin;
-
-  return {
-    containers: {
-      '/extension/cron/add': {
-        'layout': {
-          'component': 'Hero',
-          'props': {
-            'size': 'isFullheight',
-          },
+module.exports = {
+  containers: {
+    '/extension/crons/add': {
+      'layout': {
+        'component': 'Hero',
+        'props': {
+          'size': 'isFullheight',
+        },
+        'children': [{
+          'component': 'HeroBody',
+          'props': {},
           'children': [{
-            'component': 'HeroBody',
-            'props': {},
-            'children': [{
-              'component': 'Container',
-              'props': {
-                style: {
-                  paddingTop: '50px'
-                }
+            'component': 'Container',
+            'props': {
+              style: {
+                paddingTop: '50px',
               },
+            },
+            'children': [{
+              'component': 'Columns',
               'children': [{
-                'component': 'Columns',
-                'children': [{
-                  'component': 'Column',
-                  'props': {
-                    'size': 'is1',
-                  },
+                'component': 'Column',
+                'props': {
+                  'size': 'is1',
                 },
+              },
+              {
+                'component': 'Column',
+                'props': {},
+                'children': [{
+                  'component': 'Title',
+                  'props': {
+                    'style': {
+                      'textAlign': 'center',
+                    },
+                  },
+                  'children': 'Add Cron',
+                }, 
                 {
-                  'component': 'Column',
-                  'props': {},
-                  'children': [{
-                    'component': 'Title',
-                    'props': {
-                      'style': {
-                        'textAlign': 'center',
+                  component: 'ResponsiveCard',
+                  children: [
+                    {
+                      component: 'ResponsiveForm',
+                      props: {
+                        onSubmit:{
+                          url:'/extension/crons/add?format=json&unflatten=true&updateprofile=true&updatecallback=true&handleupload=true&forcequerytobody=true&encryptfiles=true',
+                          options:{
+                            method:'POST',
+                          },
+                          success: true,
+                          successCallback: 'func:this.props.reduxRouter.push',
+                        },
+                        flattenFormData: true,
+                        footergroups: false,
+                        formgroups:[
+                          {
+                            formElements: [
+                              {
+                                label: 'Name',
+                                name: 'name',
+                              },
+                              {
+                                label: 'Theme',
+                                name: 'theme',
+                              },
+                            ],
+                          },
+                          {
+                            formElements: [
+                              {
+                                label: 'Interval',
+                                name: 'cron_interval',
+                              },
+                            ],
+                          },
+                          {
+                            formElements: [
+                              {
+                                type: 'file',
+                                label: 'Upload Script',
+                                name: 'cron_file',
+                              },
+                              {
+                                type: 'layout',
+                                value: {
+                                  component: 'div',
+                                  children:' ',
+                                },
+                              },
+                            ],
+                          },
+                          {
+                            formElements: [
+                              {
+                                type: 'datalist',
+                                datalist: {
+                                  // resourceUrl: '/contentdata/standard_crons?format=json',
+                                  resourceUrl: '/extension/crons/internal-functions?format=json',
+                                  selector: '_id',
+                                  entity: 'internal_function',
+                                  // returnProperty:'_id',
+                                },
+                                label:'Internal Function',
+                                name:'internal_function',
+                              },
+                            ],
+                          },
+                          {
+                            formElements:[
+                              {
+                                type:'submit',
+                                value:'Save',
+                              },
+                            ],
+                          },
+                          {
+                            formElements: [
+                              {
+                                type: 'layout',
+                                value: {
+                                  component: 'div',
+                                  props: {
+                                    dangerouslySetInnerHTML: {
+                                      __html:cronExample,
+                                    },
+                                  },
+                                },
+                              },
+                            ],
+                          },
+                        ],
                       },
                     },
-                    'children': 'Add Cron',
-                  }, 
-                  {
-                    component: 'ResponsiveCard',
-                    children: [
-                      {
-                        component: 'ResponsiveForm',
-                        props: {
-                          onSubmit:{
-                            url:'/crons?format=json&unflatten=true&updateprofile=true&updatecallback=true&handleupload=true&forcequerytobody=true&encryptfiles=true',
-                            options:{
-                              method:'POST',
-                            },
-                            success: true,
-                            successCallback: 'func:this.props.reduxRouter.push',
-                          },
-                          flattenFormData: true,
-                          footergroups: false,
-                          formgroups:[
-                            // {
-                            //   formElements: [
-                            //     {
-                            //       label: 'Name',
-                            //       name: 'name'
-                            //     },
-                            //     {
-                            //       label: 'Theme',
-                            //       name: 'theme'
-                            //     },
-                            //   ],
-                            // },
-                            {
-                              formElements: [
-                                {
-                                  label: 'Interval',
-                                  name: 'cron_interval'
-                                },
-                              ],
-                            },
-                            {
-                              formElements: [
-                                {
-                                  type: 'file',
-                                  label: 'Upload Script',
-                                  name: 'cron_file'
-                                },
-                              ],
-                            },
-                            {
-                              formElements:[
-                                {
-                                  type:'submit',
-                                  value:'Save',
-                                },
-                              ],
-                            },
-                          ],
-                        },
-                      },
-                    ],
-                  },
                   ],
                 },
-                {
-                  'component': 'Column',
-                  'props': {
-                    'size': 'is1',
-                  },
-                },
                 ],
-              }, ],
-            },  ],
+              },
+              {
+                'component': 'Column',
+                'props': {
+                  'size': 'is1',
+                },
+              },
+              ],
+            }, ],
           }, ],
-        },
-        'resources': {
-          // crondata: `${reactadmin.manifest_prefix}cron/view/:id?format=json`,
-        },
-        'onFinish': 'render',
+        }, ],
       },
+      'resources': {
+        // formdata: `${reactapp.manifest_prefix}extension/crons/internal-functions?format=json`,
+        formdata: `${reactapp.manifest_prefix}extension/crons/internal-functions?format=json`,
+      },
+      'onFinish': 'render',
     },
-  };
+  },
 };

@@ -31,12 +31,12 @@ const scheme = {
   internal_function: String,
 	asset_signature: {
 		type: String,
-		required: true
+		// required: true
 	},
 	asset: {
 		type: ObjectId,
 		ref: 'Asset',
-		required: true
+		// required: true
 	},
 };
 

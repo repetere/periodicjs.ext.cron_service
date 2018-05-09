@@ -8,7 +8,7 @@ const extensionSettings = periodic.settings.extensions[ 'periodicjs.ext.cron_ser
 module.exports = () => {
   periodic.status.on('configuration-complete', (status) => {
     try {
-      if (extensionSettings.cron_check_file_enabled) {
+      if (extensionSettings.cronCheckFileEnabled) {
         logger.silly('Initialzing crons');
         utilities.cron.initializeCrons()
           .then(logger.silly)

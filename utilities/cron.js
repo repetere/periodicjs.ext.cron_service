@@ -15,14 +15,14 @@ function getCronFilePath(assetFilename) {
 }
 
 function downloadRemoteFiles(options) {
-  const { crons, } = options;
+  const { crons=[], } = options;
   const extensionSettings = periodic.settings.extensions[ 'periodicjs.ext.cron_service' ];
   const cronPath = extensionSettings.filePaths.cronPath;
   return new Promise((resolve, reject) => { 
     try {
       fs.ensureDir(cronPath)
         .then(() => { 
-          const remoteFiles = crons.filter(cron => cron.asset.locationtype !== 'local');
+          const remoteFiles = crons.filter(cron => cron.asset && cron.asset.locationtype !== 'local');
           if (remoteFiles.length) {
             Promisie.map(remoteFiles.map(cron => cron.asset), 5, asset => {
               const writeStream = fs.createWriteStream(path.join(cronPath, asset.attributes.periodicFilename));
@@ -90,14 +90,17 @@ function cleanupCronFiles(options) {
 
 function createCronJob(cron) {
   const containerName = periodic.settings.container.name;
-  const modulePath = getCronFilePath(cron.asset.attributes.periodicFilename);
+  const modulePath = (cron.asset)
+    ? getCronFilePath(cron.asset.attributes.periodicFilename)
+    : undefined;
   const runtimeArgs = Object.assign({},
     cron.runtime_options);
   const fn = (cron.internal_function)
     ? periodic.locals.container.get(containerName).crons[ cron.internal_function ].bind(null, runtimeArgs)
     : require(modulePath).script(periodic).bind(null, runtimeArgs);
+  console.log({ fn });
   const task = new CronJob({
-    cronTime: cronData.cron_interval,
+    cronTime: cron.cron_interval,
     onTick: fn,
     onComplete: function () {},
     start: false,
@@ -170,27 +173,60 @@ function decryptCronFile(cron) {
   });
 }
 
-function findCronsForInitialization(crons, cb) {
+function digestCronDocument(options) {
+  return new Promise((resolve, reject) => {
+    try {
+      const extensionSettings = periodic.settings.extensions[ 'periodicjs.ext.cron_service' ];
+      const { req, cron } = options;
+      const cronObj = cronMap.get(cron._id.toString()) || {};
+      if (!cronObj.task) {
+        const task = createCronJob(cron);
+        cronObj.cron = cron;
+        cronObj.task = task;
+        cronObj.active = cron.active;
+      }
+      // console.log({ cronObj, cron, extensionSettings});
+      if (cron.active && extensionSettings.cronCheckFileEnabled) {
+        logger.silly('STARTING CRON');
+        cronObj.task.start();
+      } else if (cron.active === false) {
+        logger.silly('STOPPING CRON');
+        cronObj.task.stop();
+      }
+      const updatedCronObj = {
+        cron,
+        task: cronObj.task,
+        active: cron.active,
+      };
+      cronMap.set(cron._id, updatedCronObj);
+      resolve(cron);
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
+
+function findCronsForInitialization(options) {
   return new Promise((resolve, reject) => {
     try {
       const extensionSettings = periodic.settings.extensions[ 'periodicjs.ext.cron_service' ];
       const validateTheme = extensionSettings.validateTheme;
       const CronDatas = periodic.datas.get('standard_cron');
-      resolve(
-        CronDatas.query({
-          query: (typeof validateTheme === 'string') ? {
-            $and: [{
-              active: true,
-            }, {
-              theme: validateTheme,
-            }, ],
-          } : {
+      CronDatas.query({
+        query: (typeof validateTheme === 'string') ? {
+          $and: [ {
+            active: true,
+          }, {
+            theme: validateTheme,
+          }, ],
+        } : {
             active: true,
           },
-          limit: 10000,
-          population: 'asset',
-        })
-      );
+        limit: 10000,
+        population: 'asset',
+      })
+        .then(resolve)
+        .catch(reject);
     } catch (e) {
       reject(e);
     }
@@ -200,23 +236,30 @@ function findCronsForInitialization(crons, cb) {
 function initializeCrons() {
   return new Promise((resolve, reject) => { 
     try {
-      findCronsForInitialization
-        .then(crons => downloadRemoteFiles(crons))
+      const extensionSettings = periodic.settings.extensions[ 'periodicjs.ext.cron_service' ];
+      findCronsForInitialization()
+        .then(crons => downloadRemoteFiles({crons}))
         .then(crons => {
-          return Promisie.map(crons, 10, cron => {
-            return decryptCronFile(cron);
-          });
+          if (Array.isArray(crons) && crons.length) {
+            return Promisie.map(crons, 10, cron => {
+              return decryptCronFile(cron);
+            });
+          } else {
+            return [];
+          }
         })
         .then(crons => {
-          crons.map(cron => {
+          // console.log()
+          crons.map(cronDoc => {
+            const cron = cronDoc.toJSON();
             const task = createCronJob(cron);
             const cronObj = {
               cron,
               task,
               active: cron.active,
             };
-            cronMap.set(cron._id, cronObj);
-            if (cron.active) {
+            cronMap.set(cron._id.toString(), cronObj);
+            if (cron.active && extensionSettings.cronCheckFileEnabled) {
               task.start();
             }
             return cronObj;
@@ -237,6 +280,7 @@ module.exports = {
   getCronFilePath,
   downloadRemoteFiles,
   runRemoteFiles,
+  digestCronDocument,
   initializeCrons,
   findCronsForInitialization,
 };

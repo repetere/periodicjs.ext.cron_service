@@ -25,6 +25,21 @@ function loadCron(req, res, next) {
     });
 }
 
+function createCron(req, res, next) {
+  utilities.data.createCronDocument({ req })
+    .then(cron => {
+      req.controllerData.cron = cron;
+      next();
+    })
+    .catch(err => {
+      periodic.core.controller.renderError({
+        err,
+        req,
+        res,
+      }); 
+    });
+}
+
 function runCron(req, res, next) {
   try {
     const cron = req.controllerData.cron.toJSON();
@@ -70,18 +85,45 @@ function handleResponseData(req, res) {
 }
 
 function setCronStatus(req, res, next) {
-	req.body = req.controllerData.cron.toJSON();
-	req.body.docid = req.controllerData.cron._id;
+  req.body = Object.assign({},req.controllerData.cron.toJSON());
+	req.body._id = req.controllerData.cron._id;
 	req.body.active = !req.body.active;
-	req.body._id = undefined;
-	req.body.asset = req.controllerData.cron.asset._id;
+  // req.body._id = undefined;
+  if (req.controllerData.cron.asset && req.controllerData.cron.asset._id) {
+    req.body.asset = req.controllerData.cron.asset._id;
+  }
 	req.skipemptyvaluecheck = true;
 	delete req.body._id;
 	next();
 }
 
-function updateCronStatus(req, res, next) {
-  next();
+function updateCronStatus(req, res) {
+  utilities.data.updateCronDocument({ req })
+    .then(() => {
+      // console.log('updatedCron',{cron})
+      const cron = req.body;
+      cron._id = req.params.id;
+      return utilities.cron.digestCronDocument({ req, cron, })
+    })
+    .then(cron=>{
+      // req.controllerData.cron = cron;
+      const cronStatus = req.body.active;
+        res.send(
+        routeUtils.formatResponse({
+          result: 'success',
+          data: {
+            message: `Cron ${ req.controllerData.cron._id } has ${ (cronStatus) ? 'started' : 'stopped' }`
+          }
+        }));
+    })
+    .catch(err => {
+      console.error(err);
+      periodic.core.controller.renderError({
+        err,
+        req,
+        res,
+      }); 
+    });
 }
 
 function validateCron(req, res, next) {
@@ -92,7 +134,7 @@ function mochaCron(req, res, next) {
   next();
 }
 
-const decryptAsset = function (req, res, next) {
+function decryptAsset(req, res, next) {
   if (!encryption_key) {
     const encryption_key = fs.readFileSync(extensionSettings.encryption_key_path).toString();
   }
@@ -102,8 +144,25 @@ const decryptAsset = function (req, res, next) {
   })(req, res, next);
 };
 
+function loadInternalFunctions(req, res, next) {
+  const containerName = periodic.settings.container.name;
+  const localCrons = periodic.locals.container.get(containerName).crons;
+  req.controllerData = Object.assign(
+    {},
+    req.controllerData,
+    { internal_functions: localCrons
+      ? Object.keys(localCrons).map(funcName => ({
+        _id: funcName,
+        value: funcName,
+      }))
+      : []}
+    );
+  next();
+}
+// $p.locals.container.get($p.settings.container.name).crons
 module.exports = {
   loadCron,
+  createCron,
   runCron,
   validateCron,
   mochaCron,
@@ -111,6 +170,7 @@ module.exports = {
   setCronStatus,
   updateCronStatus,
   decryptAsset,
+  loadInternalFunctions,
 }
 
 
