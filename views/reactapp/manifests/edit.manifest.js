@@ -3,10 +3,15 @@ const path = require('path');
 
 module.exports = (periodic) => {
   // let reactadmin = periodic.app.controller.extension.reactadmin;
+// const path = require('path');
+// const periodic = require('periodicjs');
+// let reactapp = periodic.locals.extensions.get('periodicjs.ext.reactapp').reactapp();
+const reactappLocals = periodic.locals.extensions.get('periodicjs.ext.reactapp');
+const reactapp = reactappLocals.reactapp();
 
   return {
     containers: {
-      '/extension/crons/:id': {
+      [`${reactapp.manifest_prefix}extension/crons/:id`]  : {
         'layout': {
           'component': 'Hero',
           'props': {
@@ -49,14 +54,14 @@ module.exports = (periodic) => {
                         component: 'ResponsiveForm',
                         props: {
                           onSubmit:{
-                            url:'/crons/:id',
+                            url:`${reactapp.manifest_prefix}contentdata/standard_crons/:id?format=json`,
                             options:{
                               method:'PUT',
                             },
                             params: [
                               { 'key': ':id', 'val': '_id', },
                             ],
-                            success: true,
+                            // success: true,
                             successCallback:'func:this.props.refresh',
                           },
                           'hiddenFields':[{
@@ -112,7 +117,7 @@ module.exports = (periodic) => {
                                     },
                                     props: {
                                       onClick: 'func:this.props.fetchAction',
-                                      onclickBaseUrl: '/cron/:id/run',
+                                      onclickBaseUrl: '/extension/crons/:id/run',
                                       onclickLinkParams: [
                                         { 'key': ':id', 'val': '_id', },
                                       ],
@@ -135,7 +140,7 @@ module.exports = (periodic) => {
                           ],
                         },
                         asyncprops: {
-                          formdata: ['crondata', 'cron'],
+                          formdata: ['crondata','data'],
                         },
                       },
                     ],
@@ -154,7 +159,7 @@ module.exports = (periodic) => {
           }, ],
         },
         'resources': {
-          // crondata: `${reactadmin.manifest_prefix}cron/:id/view?format=json`,
+          crondata: `${reactapp.manifest_prefix}contentdata/standard_crons/:id?format=json`,
         },
         'onFinish': 'render',
       },

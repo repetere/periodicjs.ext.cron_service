@@ -6,7 +6,7 @@ const cronExample = require('../components/cron_example');
 
 module.exports = {
   containers: {
-    '/extension/crons/add': {
+    [`${reactapp.manifest_prefix}extension/crons/add`]  : {
       'layout': {
         'component': 'Hero',
         'props': {
@@ -154,7 +154,7 @@ module.exports = {
       },
       'resources': {
         // formdata: `${reactapp.manifest_prefix}extension/crons/internal-functions?format=json`,
-        formdata: `${reactapp.manifest_prefix}extension/crons/internal-functions?format=json`,
+        formdata: `/extension/crons/internal-functions?format=json`,
       },
       'onFinish': 'render',
     },

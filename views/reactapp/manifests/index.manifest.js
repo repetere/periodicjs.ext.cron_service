@@ -7,7 +7,7 @@ const reactapp = reactappLocals.reactapp();
 
 module.exports = {
   containers: {
-    '/extension/crons': {
+    [`${reactapp.manifest_prefix}extension/crons`]: {
       'layout': {
         'component': 'Hero',
         'props': {
@@ -41,7 +41,7 @@ module.exports = {
                     component: 'ResponsiveButton',
                     props: {
                       onClick: 'func:this.props.reduxRouter.push',
-                      onclickBaseUrl: '/extension/crons/add',
+                      onclickBaseUrl: `${reactapp.manifest_prefix}extension/crons/add`,
                       buttonProps: {
                         size: 'isPrimary',
                       }
@@ -77,7 +77,7 @@ module.exports = {
                               sortid: '_id',
                               sortable: true,
                               link: {
-                                baseUrl: '/extension/crons/:id',
+                                baseUrl: `${reactapp.manifest_prefix}extension/crons/:id`,
                                 params: [
                                   {
                                     key: ':id',
@@ -131,7 +131,7 @@ module.exports = {
                                     color: 'isSuccess',
                                   },
                                   onClick: 'func:this.props.fetchAction',
-                                  onclickBaseUrl: '/extension/crons/setactive/:id/:status',
+                                  onclickBaseUrl: `/extension/crons/setactive/:id/:status`,
                                   onclickLinkParams: [
                                     { 'key': ':id', 'val': '_id', },
                                     { 'key': ':status', 'val': 'active' }
@@ -152,7 +152,7 @@ module.exports = {
                                     color: 'isInfo',
                                   },
                                   onClick: 'func:this.props.fetchAction',
-                                  onclickBaseUrl: '/extension/crons/:id/run',
+                                  onclickBaseUrl: `/extension/crons/:id/run`,
                                   onclickLinkParams: [
                                     { 'key': ':id', 'val': '_id', },
                                   ],
@@ -172,7 +172,7 @@ module.exports = {
                                     color: 'isInfo',
                                   },
                                   onClick: 'func:this.props.fetchAction',
-                                  onclickBaseUrl: '/extension/crons/:id/validate',
+                                  onclickBaseUrl: `/extension/crons/:id/validate`,
                                   onclickLinkParams: [
                                     { 'key': ':id', 'val': '_id', },
                                   ],
@@ -192,7 +192,7 @@ module.exports = {
                                     color: 'isWarning',
                                   },
                                   onClick: 'func:this.props.fetchAction',
-                                  onclickBaseUrl: '/extension/crons/:id/mocha',
+                                  onclickBaseUrl: `/extension/crons/:id/mocha`,
                                   onclickLinkParams: [
                                     { 'key': ':id', 'val': '_id', },
                                   ],
@@ -216,7 +216,7 @@ module.exports = {
                                     color: 'isDanger',
                                   },
                                   onClick: 'func:this.props.fetchAction',
-                                  onclickBaseUrl: '/extension/crons/:id',
+                                  onclickBaseUrl: `/extension/crons/:id`,
                                   onclickLinkParams: [ { 'key': ':id', 'val': '_id', } ],
                                   'fetchProps': {
                                     'method': 'DELETE',
