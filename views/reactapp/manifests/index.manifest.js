@@ -13,23 +13,23 @@ module.exports = {
         'props': {
           'size': 'isFullheight',
         },
-        'children': [ {
+        'children': [{
           'component': 'HeroBody',
           'props': {},
-          'children': [ {
+          'children': [{
             'component': 'Container',
             'props': {
               style: {
-                paddingTop: '50px'
-              }
+                paddingTop: '50px',
+              },
             },
-            'children': [ {
+            'children': [{
               'component': 'Columns',
               'children': [
                 {
                   'component': 'Column',
                   'props': {},
-                  'children': [ {
+                  'children': [{
                     'component': 'Title',
                     'props': {
                       'style': {
@@ -44,7 +44,7 @@ module.exports = {
                       onclickBaseUrl: `${reactapp.manifest_prefix}extension/crons/add`,
                       buttonProps: {
                         size: 'isPrimary',
-                      }
+                      },
                     },
                     children: 'Add Cron',
                   },
@@ -124,17 +124,17 @@ module.exports = {
                             },
                             {
                               label: ' ',
-                              buttons: [ {
+                              buttons: [{
                                 children: 'Activate',
                                 passProps: {
                                   buttonProps: {
                                     color: 'isSuccess',
                                   },
                                   onClick: 'func:this.props.fetchAction',
-                                  onclickBaseUrl: `/extension/crons/setactive/:id/:status`,
+                                  onclickBaseUrl: '/extension/crons/setactive/:id/:status',
                                   onclickLinkParams: [
                                     { 'key': ':id', 'val': '_id', },
-                                    { 'key': ':status', 'val': 'active' }
+                                    { 'key': ':status', 'val': 'active', },
                                   ],
                                   'fetchProps': {
                                     'method': 'POST',
@@ -152,7 +152,7 @@ module.exports = {
                                     color: 'isInfo',
                                   },
                                   onClick: 'func:this.props.fetchAction',
-                                  onclickBaseUrl: `/extension/crons/:id/run`,
+                                  onclickBaseUrl: '/extension/crons/:id/run',
                                   onclickLinkParams: [
                                     { 'key': ':id', 'val': '_id', },
                                   ],
@@ -172,7 +172,7 @@ module.exports = {
                                     color: 'isInfo',
                                   },
                                   onClick: 'func:this.props.fetchAction',
-                                  onclickBaseUrl: `/extension/crons/:id/validate`,
+                                  onclickBaseUrl: '/extension/crons/:id/validate',
                                   onclickLinkParams: [
                                     { 'key': ':id', 'val': '_id', },
                                   ],
@@ -192,7 +192,7 @@ module.exports = {
                                     color: 'isWarning',
                                   },
                                   onClick: 'func:this.props.fetchAction',
-                                  onclickBaseUrl: `/extension/crons/:id/mocha`,
+                                  onclickBaseUrl: '/extension/crons/:id/mocha',
                                   onclickLinkParams: [
                                     { 'key': ':id', 'val': '_id', },
                                   ],
@@ -209,15 +209,15 @@ module.exports = {
                             },
                             {
                               label: ' ',
-                              buttons: [ {
+                              buttons: [{
                                 children: 'Remove',
                                 passProps: {
                                   buttonProps: {
                                     color: 'isDanger',
                                   },
                                   onClick: 'func:this.props.fetchAction',
-                                  onclickBaseUrl: `/extension/crons/:id`,
-                                  onclickLinkParams: [ { 'key': ':id', 'val': '_id', } ],
+                                  onclickBaseUrl: '/extension/crons/:id',
+                                  onclickLinkParams: [{ 'key': ':id', 'val': '_id', },],
                                   'fetchProps': {
                                     'method': 'DELETE',
                                   },
@@ -229,21 +229,21 @@ module.exports = {
                               },
                               ],
                             },
-                          ]
+                          ],
                         },
                         asyncprops: {
                           'rows': [
-                            'crondata', 'data','standard_crons',
+                            'crondata', 'data', 'standard_crons',
                           ],
                         },
                       },
                     ],
-                  } ],
+                  },],
                 },
               ],
-            }, ],
-          }, ],
-        }, ],
+            },],
+          },],
+        },],
       },
       'resources': {
         // crondata: `${reactadmin.manifest_prefix}crons/view/all?format=json`,

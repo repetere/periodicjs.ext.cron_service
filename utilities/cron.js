@@ -5,11 +5,14 @@ const Promisie = require('promisie');
 const path = require('path');
 const https = require('https');
 const fs = require('fs-extra');
+const os = require('os');
+const luxon = require('luxon');
 const CoreControllerModule = require('periodicjs.core.controller');
 const cronMap = new Map();
 const CronJob = require('cron').CronJob;
 
 function getCronFilePath(assetFilename) {
+  const extensionSettings = periodic.settings.extensions[ 'periodicjs.ext.cron_service' ];
   const cronPath = extensionSettings.filePaths.cronPath;
   return  path.join(cronPath, assetFilename);
 }
@@ -62,7 +65,7 @@ function downloadRemoteFiles(options) {
 function runRemoteFiles(options) {
   return new Promise((resolve, reject) => { 
     try {
-      const { crons } = options;
+      const { crons, } = options;
       const cron = crons[ 0 ];
       const CACHE = require.cache;
       const cronFnPath = getCronFilePath(cron.asset.attributes.periodicFilename);
@@ -78,7 +81,7 @@ function runRemoteFiles(options) {
 function cleanupCronFiles(options) {
   return new Promise((resolve, reject) => {
     try {
-      const { crons } = options;
+      const { crons, } = options;
       const cron = crons[ 0 ];
       const cronFnPath = getCronFilePath(cron.asset.attributes.periodicFilename);
       resolve(fs.remove(cronFnPath));
@@ -86,6 +89,120 @@ function cleanupCronFiles(options) {
       reject(e);
     }
   });
+}
+
+const cronStatuses = {
+  idle:'0 idle',
+  running:'1 running',
+  complete:'2 complete',
+};
+
+function cronCompleteFunction(options) {
+  const extensionSettings = periodic.settings.extensions[ 'periodicjs.ext.cron_service' ];
+  const { cron, } = options;
+  const CronHostDatas = periodic.datas.get('standard_cronhoststatus');
+  const hostname = os.hostname();
+  const pid = process.pid;
+  const cron_id = cron._id;
+  let cronHostUpdateDoc = {};
+
+  return function onComplete(){
+    if (extensionSettings.use_cron_host_status) {
+      CronHostDatas.load({
+        query: {
+          cron_id,
+          pid,
+          hostname,
+        },
+      })
+        .then(cronHostStatus => {
+          cronHostUpdateDoc = cronHostStatus.toJSON();
+          const complete_time = new Date();
+          const end = luxon.DateTime.fromJSDate(complete_time);
+          const start = luxon.DateTime.fromJSDate(new Date(cronHostUpdateDoc.start_time));
+          const duration = end.diff(start);
+          return CronHostDatas.update({
+            id: cronHostUpdateDoc._id,
+            updatedoc: {
+              status:cronStatuses.complete,
+              complete_time,
+              duration,
+            },
+            isPatch:true,
+          });
+        })
+        .then(() => { 
+          periodic.logger.info(`Completed cron ${cron.name} on ${hostname}(pid:${pid})`);
+        })
+        .catch(periodic.logger.error);
+    }
+  };
+}
+
+function cronTickFuction(options) {
+  const { fn, cron, } = options;
+  const extensionSettings = periodic.settings.extensions[ 'periodicjs.ext.cron_service' ];
+  const CronHostDatas = periodic.datas.get('standard_cronhoststatus');
+  const hostname = os.hostname();
+  const pid = process.pid;
+  const cron_id = cron._id;
+  const cron_name = cron.name;
+  const cron_interval = cron.cron_interval;
+  let cronHostUpdateDoc = {};
+  let selectedHost;
+
+  return function onTick() {
+    if (extensionSettings.use_cron_host_status) {
+      //pull all host datas
+      CronHostDatas.search({
+        query: {},
+        sort: {
+          hostname: 1,
+          status: 1,
+          start_time: 1,
+          pid:1,
+        },
+      })
+        .then(cronHosts => {
+          const allHosts = cronHosts;
+          const availableHosts = allHosts.filter(cronHost => cronHost.status === cronStatuses.idle);
+          selectedHost = availableHosts[ 0 ];
+          //sort object by hostname,start_time,pid,status
+          return selectedHost;
+        })
+        .then(cronHostStatus => {
+          cronHostUpdateDoc = (typeof cronHostStatus.toJSON === 'function')
+            ? cronHostStatus.toJSON()
+            : cronHostStatus;
+          
+          if (cronHostUpdateDoc.hostname === hostname && cronHostUpdateDoc.pid === pid) {
+            CronHostDatas.update({
+              id: cronHostUpdateDoc._id,
+              updatedoc: {
+                status:cronStatuses.running,
+                cron_id,
+                cron_name,
+                cron_interval,
+                start_time: new Date(),
+                // complete_time,
+                // duration,
+              },
+              isPatch:true,
+            });
+            periodic.logger.info(`Running cron ${cron.name} on ${hostname}(pid:${pid})`);
+            return fn();
+          } else {
+            return () => {
+              periodic.logger.debug(`Not running cron ${cron.name} on ${hostname}(pid:${pid}) | selected (${cronHostUpdateDoc.hostname} + ${cronHostUpdateDoc.pid})`);
+            };
+          }
+        })
+        .catch(periodic.logger.error);
+    } else {
+      periodic.logger.info(`Running cron ${cron.name} on ${hostname}(pid:${pid})`);
+      return fn();
+    }
+  };
 }
 
 function createCronJob(cron) {
@@ -98,15 +215,15 @@ function createCronJob(cron) {
   const fn = (cron.internal_function)
     ? periodic.locals.container.get(containerName).crons[ cron.internal_function ].bind(null, runtimeArgs)
     : require(modulePath).script(periodic).bind(null, runtimeArgs);
-  console.log({ fn });
+  console.log({ fn, });
   const task = new CronJob({
     cronTime: cron.cron_interval,
-    onTick: fn,
-    onComplete: function () {},
+    onTick: cronTickFuction({ fn, cron, }),
+    onComplete: cronCompleteFunction({ cron, }),
     start: false,
   });
   return task;
-};
+}
 
 const check_cluster_safe_check = function(periodic) {
   let cluster_safe = true;
@@ -118,32 +235,32 @@ const check_cluster_safe_check = function(periodic) {
   let hostname = os.hostname();
 
   if (cron_service_hostname_settings && Array.isArray(cron_service_hostname_settings) && cron_service_hostname_settings.length > 0) {
-      cron_service_hostname_settings.forEach(hostname_filter => {
-          if (hostname.search(new RegExp(hostname_filter, 'gi')) !== -1) {
-              hostname_matched_filter = true;
-          }
-      });
+    cron_service_hostname_settings.forEach(hostname_filter => {
+      if (hostname.search(new RegExp(hostname_filter, 'gi')) !== -1) {
+        hostname_matched_filter = true;
+      }
+    });
   }
 
   fs.readJsonAsync(config_file_path)
-      .then(config_file_path_json => {
-          original_config_settings = Object.assign({}, config_file_path_json);
-          config_settings = Object.assign({}, config_file_path_json);
-          if (hostname_matched_filter && config_file_path_json.cluster_process) {
-              config_settings.cluster_process = false;
-              return fs.outputJsonAsync(config_file_path, config_settings, { spaces: 2 });
-          }
-      })
-      .then((outputJsonResult) => {
-          if (hostname_matched_filter && original_config_settings.cluster_process) {
-              periodic.logger.warn(`Cron Service cannot run in a clustered environemt, fixing content/config/environment/${appenvironment}.json and restarting Periodicjs`);
-              periodic.core.utilities.restart_app({ callback: function() {} });
-          }
-          // else {
-          // 	console.log('hostname',hostname,'hostname_matched_filter', hostname_matched_filter, 'config_settings.cluster_process', config_settings.cluster_process, 'do not restart app');
-          // }
-      })
-      .catch(e => periodic.logger.error(e));
+    .then(config_file_path_json => {
+      original_config_settings = Object.assign({}, config_file_path_json);
+      config_settings = Object.assign({}, config_file_path_json);
+      if (hostname_matched_filter && config_file_path_json.cluster_process) {
+        config_settings.cluster_process = false;
+        return fs.outputJsonAsync(config_file_path, config_settings, { spaces: 2, });
+      }
+    })
+    .then((outputJsonResult) => {
+      if (hostname_matched_filter && original_config_settings.cluster_process) {
+        periodic.logger.warn(`Cron Service cannot run in a clustered environemt, fixing content/config/environment/${appenvironment}.json and restarting Periodicjs`);
+        periodic.core.utilities.restart_app({ callback: function() {}, });
+      }
+      // else {
+      // 	console.log('hostname',hostname,'hostname_matched_filter', hostname_matched_filter, 'config_settings.cluster_process', config_settings.cluster_process, 'do not restart app');
+      // }
+    })
+    .catch(e => periodic.logger.error(e));
 };
 
 function encryptCronFile(cron) {
@@ -177,7 +294,7 @@ function digestCronDocument(options) {
   return new Promise((resolve, reject) => {
     try {
       const extensionSettings = periodic.settings.extensions[ 'periodicjs.ext.cron_service' ];
-      const { req, cron } = options;
+      const { req, cron, } = options;
       const cronObj = cronMap.get(cron._id.toString()) || {};
       if (!cronObj.task) {
         const task = createCronJob(cron);
@@ -210,18 +327,18 @@ function findCronsForInitialization(options) {
   return new Promise((resolve, reject) => {
     try {
       const extensionSettings = periodic.settings.extensions[ 'periodicjs.ext.cron_service' ];
-      const validateTheme = extensionSettings.validateTheme;
+      const validate_container = extensionSettings.validate_container;
       const CronDatas = periodic.datas.get('standard_cron');
       CronDatas.query({
-        query: (typeof validateTheme === 'string') ? {
-          $and: [ {
+        query: (typeof validate_container === 'string') ? {
+          $and: [{
             active: true,
           }, {
-            theme: validateTheme,
+            container: validate_container,
           }, ],
         } : {
-            active: true,
-          },
+          active: true,
+        },
         limit: 10000,
         population: 'asset',
       })
@@ -231,14 +348,84 @@ function findCronsForInitialization(options) {
       reject(e);
     }
   });
-};
+}
+
+function configureCronHostStatus(options) {
+  return new Promise((resolve, reject) => {
+    try {
+      // console.log('periodic.settings',periodic.settings)
+      const extensionSettings = periodic.settings.extensions[ 'periodicjs.ext.cron_service' ];
+      const CronHostDatas = periodic.datas.get('standard_cronhoststatus');
+      // const numWorkers = periodic.settings.application.number_of_clusters || os.cpus().length;
+      const hostname = os.hostname();
+      const pid = process.pid;
+      let masterProcessId =             periodic.config.process.masterProcessId;
+
+      if (extensionSettings.use_cron_host_status && extensionSettings.available_hostnames.indexOf(hostname>-1)) {
+        new Promise((resolveInner, rejectInner)=>{
+          if(masterProcessId){
+            // console.log('already has masterpid:',{masterProcessId});
+            return resolveInner(masterProcessId);
+          } else{
+            periodic.status.on('clustered-process-master-process-id', masterProcessIdFromMasterMsg=>{
+              // console.log('waiting on masterpid',masterProcessIdFromMasterMsg)
+              masterProcessId = masterProcessIdFromMasterMsg;
+              return resolveInner(masterProcessIdFromMasterMsg);
+            });
+          }
+        })
+          .then(()=>{
+            const query = {
+              hostname,
+              master_pid: {
+                $ne: masterProcessId.toString(),
+              },
+            };
+            return CronHostDatas.search({
+              query,
+              sort: { createdat: -1, },
+            });
+          })
+          .then(existingHostCrons => {
+            // console.log({ existingHostCrons });
+            if (Array.isArray(existingHostCrons) && existingHostCrons.length) {
+              // console.log({existingHostCrons})
+              const cronHostIds = existingHostCrons.map(cronhost => cronhost._id.toString());
+              // console.log({ cronHostIds,  });
+              return Promisie.map(cronHostIds, 5, cronhostId => {
+                return CronHostDatas.delete({ deleteid: cronhostId, });
+              });
+            } else return true;
+          })
+          .then(() => {
+            resolve(CronHostDatas.create({
+              newdoc: {
+                hostname,
+                pid,
+                master_pid:masterProcessId.toString(),
+                status:cronStatuses.idle,
+              },
+            }));
+          })
+          .catch(reject);
+      } else {
+        resolve(true);
+      }
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
 
 function initializeCrons() {
   return new Promise((resolve, reject) => { 
     try {
       const extensionSettings = periodic.settings.extensions[ 'periodicjs.ext.cron_service' ];
-      findCronsForInitialization()
-        .then(crons => downloadRemoteFiles({crons}))
+      configureCronHostStatus()
+        .then(() => {
+          return findCronsForInitialization();
+        })
+        .then(crons => downloadRemoteFiles({ crons, }))
         .then(crons => {
           if (Array.isArray(crons) && crons.length) {
             return Promisie.map(crons, 10, cron => {
@@ -274,7 +461,7 @@ function initializeCrons() {
       reject(e);
     }
   });
-};
+}
 
 module.exports = {
   getCronFilePath,
@@ -282,5 +469,6 @@ module.exports = {
   runRemoteFiles,
   digestCronDocument,
   initializeCrons,
+  configureCronHostStatus,
   findCronsForInitialization,
 };

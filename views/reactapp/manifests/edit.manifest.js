@@ -6,8 +6,8 @@ module.exports = (periodic) => {
 // const path = require('path');
 // const periodic = require('periodicjs');
 // let reactapp = periodic.locals.extensions.get('periodicjs.ext.reactapp').reactapp();
-const reactappLocals = periodic.locals.extensions.get('periodicjs.ext.reactapp');
-const reactapp = reactappLocals.reactapp();
+  const reactappLocals = periodic.locals.extensions.get('periodicjs.ext.reactapp');
+  const reactapp = reactappLocals.reactapp();
 
   return {
     containers: {
@@ -24,8 +24,8 @@ const reactapp = reactappLocals.reactapp();
               'component': 'Container',
               'props': {
                 style: {
-                  paddingTop: '50px'
-                }
+                  paddingTop: '50px',
+                },
               },
               'children': [{
                 'component': 'Columns',
@@ -67,18 +67,18 @@ const reactapp = reactappLocals.reactapp();
                           'hiddenFields':[{
                             'form_name':'docid',
                             'form_val':'_id',
-                          }, ],
+                          },],
                           flattenFormData: true,
                           formgroups:[
                             {
                               formElements: [
                                 {
                                   label: 'Name',
-                                  name: 'name'
+                                  name: 'name',
                                 },
                                 {
                                   label: 'Theme',
-                                  name: 'theme'
+                                  name: 'theme',
                                 },
                               ],
                             },
@@ -86,11 +86,11 @@ const reactapp = reactappLocals.reactapp();
                               formElements: [
                                 {
                                   label: 'Author',
-                                  name: 'author'
+                                  name: 'author',
                                 },
                                 {
                                   label: 'Interval',
-                                  name: 'cron_interval'
+                                  name: 'cron_interval',
                                 },
                               ],
                             },
@@ -98,7 +98,7 @@ const reactapp = reactappLocals.reactapp();
                               formElements: [
                                 {
                                   label: 'Active',
-                                  name: 'active'
+                                  name: 'active',
                                 },
                               ],
                             },
@@ -113,7 +113,7 @@ const reactapp = reactappLocals.reactapp();
                                   value: {
                                     component: 'ResponsiveButton',
                                     thisprops: {
-                                      onclickPropObject: ['formdata'],
+                                      onclickPropObject: ['formdata',],
                                     },
                                     props: {
                                       onClick: 'func:this.props.fetchAction',
@@ -126,7 +126,7 @@ const reactapp = reactappLocals.reactapp();
                                       },
                                       buttonProps: {
                                         size: 'isPrimary',
-                                      }
+                                      },
                                     },
                                     'successProps':{
                                       'success':true,
@@ -134,13 +134,13 @@ const reactapp = reactappLocals.reactapp();
                                     },
                                     children: 'Run',
                                   },
-                                }
+                                },
                               ],
                             },
                           ],
                         },
                         asyncprops: {
-                          formdata: ['crondata','data'],
+                          formdata: ['crondata', 'data',],
                         },
                       },
                     ],
@@ -154,9 +154,9 @@ const reactapp = reactappLocals.reactapp();
                   },
                 },
                 ],
-              }, ],
-            },  ],
-          }, ],
+              },],
+            },],
+          },],
         },
         'resources': {
           crondata: `${reactapp.manifest_prefix}contentdata/standard_crons/:id?format=json`,

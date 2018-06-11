@@ -26,7 +26,7 @@ const scheme = {
   active: {
     type: Sequelize.BOOLEAN,
   },
-  theme: {
+  container: {
     type: Sequelize.STRING,
   },
   command_line_arguments: {
@@ -53,8 +53,8 @@ const options = {
   underscored: true,
   timestamps: true,
   indexes: [{
-    fields: ['createdat'],
-  }],
+    fields: ['createdat',],
+  },],
   createdAt: 'createdat',
   updatedAt: 'updatedat',
 };
@@ -65,16 +65,16 @@ const associations = [{
   options: {
     as: 'asset_id',
   },
-}, ];
+},];
 
 module.exports = {
   scheme,
   options,
   associations,
   coreDataOptions: {
-    docid: ['_id', 'name', ],
+    docid: ['_id', 'name',],
     sort: { createdat: -1, },
-    search: ['title', 'name', 'asset_signature', ],
-        // population: 'user_id',
+    search: ['title', 'name', 'asset_signature',],
+    // population: 'user_id',
   },
 };
