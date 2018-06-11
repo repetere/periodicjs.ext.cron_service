@@ -38,10 +38,19 @@ const entityPage = {
   totalpages: (hasItems) ? items[`${entityName.plural}totalpages`] : 1,
   currentpage: (hasItems) ? items[`${entitytype}page_current`] : 1,
 }
+const notification = (request.query && request.query.notification)
+  ? request.query.notification
+  : locals.notification;
 // console.log({entityPage,items});
 
 %>
 <article>
+
+  <% if(notification){%>
+    <section>
+      <input value="<%- notification %>" disabled readonly style="width: 100%; font-size: 120%; margin: 0rem 0rem 1rem; padding: 1rem; background: whitesmoke; box-sizing: border-box; border: 1px solid lightgray; color:black;"/>
+    </section> 
+  <%}%>
   <section>
     <form method="GET" style="flex-direction:row">
         <input placeholder="Search <%- entityName.pluralCapitalized %>" name="query" type="text" value="<%- request.query.query %>"/>
@@ -70,7 +79,7 @@ const entityPage = {
           <tr>
             <td><a href="<%- path.join(request.baseurl,request.parsed.pathname,item._id.toString()).replace('ext/dblogger','data') %>"><%- item._id %></a></td>
             <td><%- item.title %></td>
-            <td><%- item.description %></td>
+            <td><%- item.description || item.content %></td>
             <td>
             
             <form action="<%- path.join('/extension/crons/setactive',item._id.toString(),cronStatus) %>" method="POST">

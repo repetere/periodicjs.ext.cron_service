@@ -102,12 +102,18 @@ function cronCompleteFunction(options) {
   const { cron, } = options;
   const CronHostDatas = periodic.datas.get('standard_cronhoststatus');
   const hostname = os.hostname();
-  const pid = process.pid;
   const cron_id = cron._id;
-  let cronHostUpdateDoc = {};
-
-  return function onComplete(){
-    if (extensionSettings.use_cron_host_status) {
+  const pid = process.pid.toString();
+  
+  return function onComplete() {
+    const cronMapObject = cronMap.get(cron_id.toString());
+    // console.log('RUNNING ON COMPLETE FUNCTION', {
+    //   cron_id,
+    //   pid,
+    //   hostname,
+    // });
+    let cronHostUpdateDoc = {};
+    if (extensionSettings.use_cron_host_status && cronMapObject) {
       CronHostDatas.load({
         query: {
           cron_id,
@@ -120,11 +126,16 @@ function cronCompleteFunction(options) {
           const complete_time = new Date();
           const end = luxon.DateTime.fromJSDate(complete_time);
           const start = luxon.DateTime.fromJSDate(new Date(cronHostUpdateDoc.start_time));
-          const duration = end.diff(start);
+          const duration = end.diff(start).toObject();
+          // console.log({ duration });
           return CronHostDatas.update({
             id: cronHostUpdateDoc._id,
             updatedoc: {
-              status:cronStatuses.complete,
+              cron_name:null,
+              cron_id:null,
+              cron_interval:null,
+              cron_interval_pretty:null,
+              status:cronStatuses.idle,
               complete_time,
               duration,
             },
@@ -133,44 +144,94 @@ function cronCompleteFunction(options) {
         })
         .then(() => { 
           periodic.logger.info(`Completed cron ${cron.name} on ${hostname}(pid:${pid})`);
+          this.start();//restart job
         })
         .catch(periodic.logger.error);
+    } else if(cronMapObject) {
+      periodic.logger.info(`Completed cron ${cron.name} on ${hostname}(pid:${pid})`);
+      this.start();//restart job
+
+    } else {
+      periodic.logger.warn('missing cronMapObject');
     }
   };
 }
 
+function randomDelayPromise() {
+  return new Promise((resolve, reject) => {
+    const randomDelay = Math.random() * 1000;
+    const t = setTimeout(() => {
+      resolve(true);
+    }, randomDelay);
+  });
+}
+
 function cronTickFuction(options) {
-  const { fn, cron, } = options;
+  const { fn, cron, runtimeArgs, } = options;
   const extensionSettings = periodic.settings.extensions[ 'periodicjs.ext.cron_service' ];
   const CronHostDatas = periodic.datas.get('standard_cronhoststatus');
   const hostname = os.hostname();
-  const pid = process.pid;
+  const pid = process.pid.toString();
+  let masterProcessId =             periodic.config.process.masterProcessId;
   const cron_id = cron._id;
   const cron_name = cron.name;
   const cron_interval = cron.cron_interval;
   let cronHostUpdateDoc = {};
   let selectedHost;
-
+  
   return function onTick() {
+    // console.log('RUNNING ON TICK FUNCTION', { pid, hostname, masterProcessId });
+    const cronThisContext = this;
     if (extensionSettings.use_cron_host_status) {
       //pull all host datas
-      CronHostDatas.search({
-        query: {},
-        sort: {
-          hostname: 1,
-          status: 1,
-          start_time: 1,
-          pid:1,
-        },
-      })
+      randomDelayPromise()
+        .then(() => {
+          return CronHostDatas.search({
+            query: {
+              $and: [
+                {
+                  cron_name: { $ne: cron_name, },
+                  status: cronStatuses.idle,
+                },
+              ],
+            },
+            sort: {
+              hostname: 1,
+              status: 1,
+              start_time: 1,
+              complete_time: 1,
+              pid:1,
+              master_pid:1,
+            },
+          });
+        })
         .then(cronHosts => {
           const allHosts = cronHosts;
-          const availableHosts = allHosts.filter(cronHost => cronHost.status === cronStatuses.idle);
-          selectedHost = availableHosts[ 0 ];
+          const availableHosts = allHosts.filter(cronHost => cronHost.master_pid !== masterProcessId);
+          // console.log({
+          //   hostname, pid,
+          //   allHostsLengh:allHosts.length,
+          //   availableHostsLengh:availableHosts.length,
+          //   availableHosts: availableHosts.map(host => ({
+          //     pid: host.pid,
+          //     cron_name: host.cron_name,
+          //     status: host.status,
+          //     hostname: host.hostname,
+          //     master_pid: host.master_pid,
+          //   }))
+          // });
+          if (availableHosts.length === allHosts.length) {
+            selectedHost = allHosts[ 0 ];
+          } else {
+            selectedHost = availableHosts[ 0 ];
+          }
           //sort object by hostname,start_time,pid,status
+          // console.log({ hostname, pid, selectedHost });
           return selectedHost;
         })
         .then(cronHostStatus => {
+          // console.log({ cronHostStatus });
+          if(!cronHostStatus) throw new Error('No available hosts to run cron', cron);
           cronHostUpdateDoc = (typeof cronHostStatus.toJSON === 'function')
             ? cronHostStatus.toJSON()
             : cronHostStatus;
@@ -189,18 +250,20 @@ function cronTickFuction(options) {
               },
               isPatch:true,
             });
+            // console.log(`Running cron ${cron.name} on ${hostname}(pid:${pid})`);
             periodic.logger.info(`Running cron ${cron.name} on ${hostname}(pid:${pid})`);
-            return fn();
+            return fn.call(cronThisContext, runtimeArgs);
           } else {
-            return () => {
+            return function passableCronFunction(){
+              // console.log(`Not running cron ${cron.name} on ${hostname}(pid:${pid}) | selected (${cronHostUpdateDoc.hostname} + ${cronHostUpdateDoc.pid})`);
               periodic.logger.debug(`Not running cron ${cron.name} on ${hostname}(pid:${pid}) | selected (${cronHostUpdateDoc.hostname} + ${cronHostUpdateDoc.pid})`);
-            };
+            }();
           }
         })
         .catch(periodic.logger.error);
     } else {
       periodic.logger.info(`Running cron ${cron.name} on ${hostname}(pid:${pid})`);
-      return fn();
+      return fn.call(cronThisContext, runtimeArgs);
     }
   };
 }
@@ -213,15 +276,16 @@ function createCronJob(cron) {
   const runtimeArgs = Object.assign({},
     cron.runtime_options);
   const fn = (cron.internal_function)
-    ? periodic.locals.container.get(containerName).crons[ cron.internal_function ].bind(null, runtimeArgs)
-    : require(modulePath).script(periodic).bind(null, runtimeArgs);
-  console.log({ fn, });
+    ? periodic.locals.container.get(containerName).crons[ cron.internal_function ]//.bind(null, runtimeArgs)
+    : require(modulePath).script(periodic);//.bind(null, runtimeArgs);
+  // console.log({ fn, });
   const task = new CronJob({
     cronTime: cron.cron_interval,
-    onTick: cronTickFuction({ fn, cron, }),
+    onTick: cronTickFuction({ fn, cron, runtimeArgs, }),
     onComplete: cronCompleteFunction({ cron, }),
     start: false,
   });
+  // task.addCallback(cronCompleteFunction({ cron, }));
   return task;
 }
 
@@ -315,7 +379,7 @@ function digestCronDocument(options) {
         task: cronObj.task,
         active: cron.active,
       };
-      cronMap.set(cron._id, updatedCronObj);
+      cronMap.set(cron._id.toString(), updatedCronObj);
       resolve(cron);
     } catch (e) {
       reject(e);
@@ -335,7 +399,7 @@ function findCronsForInitialization(options) {
             active: true,
           }, {
             container: validate_container,
-          }, ],
+          },],
         } : {
           active: true,
         },
