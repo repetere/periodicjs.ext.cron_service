@@ -23,6 +23,10 @@ const scheme = {
     type: Sequelize.STRING,
     required: true,
   },
+  cron_interval_pretty: {
+    type: Sequelize.STRING,
+    required: true,
+  },
   active: {
     type: Sequelize.BOOLEAN,
   },

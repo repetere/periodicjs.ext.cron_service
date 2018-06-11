@@ -14,15 +14,15 @@
         "node_modules/periodicjs.ext.cron_service/views/reactapp/manifests"
       ],
       "navigation": "node_modules/periodicjs.ext.cron_service/views/reactapp/components/navigation.manifest.js"
+    },
+    "periodicjs_ext_admin": {
+      "Cron Service": [{
+        "link": "/b-admin/ext/cron_service/standard_crons",
+        "title": "All Crons"
+      },{
+        "link": "/b-admin/ext/cron_service/standard_cronhoststatuses",
+        "title": "Cron Host Servers"
+      }]
     }
-  },
-  "periodicjs_ext_admin": {
-    "Cron Service": [{
-      "link": "/b-admin/ext/cron_service/crons",
-      "title": "All Crons"
-    },{
-      "link": "/b-admin/ext/cron_service/add-cron",
-      "title": "Add Cron"
-    }]
   }
 }

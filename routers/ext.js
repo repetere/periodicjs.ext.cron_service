@@ -16,6 +16,7 @@ if (usesBasicAdmin || usesReactApp) {
     extRouter.use(adminControllers.adminResLocals);
   }
   extRouter.use(dataRouters.get('standard_cron').router);
+  extRouter.use(dataRouters.get('standard_cronhoststatus').router);
 }
 
 module.exports = extRouter;

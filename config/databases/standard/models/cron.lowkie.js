@@ -18,6 +18,7 @@ const scheme = {
     type: String,
     required: true,
   },
+  cron_interval_pretty: String,
   active: {
     type: Boolean,
     default: false,

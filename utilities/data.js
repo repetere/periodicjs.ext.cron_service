@@ -7,7 +7,7 @@ function getDataCoreController() {
   try {
     const dataCoreControllers = new Map();
     for (let [dataName, datum, ] of periodic.datas) {
-      if (dataName === 'standard_cron') {
+      if (dataName === 'standard_cron' || dataName === 'standard_cronhoststatus') {
         const CoreController = new CoreControllerModule(periodic, {
           compatibility: false,
           skip_responder: true,

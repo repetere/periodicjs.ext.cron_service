@@ -53,44 +53,39 @@ const entityPage = {
       <thead>
         <tr>
           <th>ID</th>
-          <th>Title</th>
-          <th>Description</th>
-          <th>Active</th>
-          <th>Cron Interval</th>
-          <th>Type</th>
+          <th>Hostname</th>
+          <th>Master PID</th>
+          <th>ProcessId</th>
+          <th>Status</th>
+          <th>Cron</th>
+          <th>Start Time</th>
+          <th>Complete Time</th>
+          <th>Duration</th>
         </tr>
       </thead>
       <tbody>
       <% if(hasItems){
         items[pluralize(entitytype)].documents.map(item=>{
           // console.log({item})
-          const cronStatus = ( item.active) ? 'false':'true';
-
           %>
           <tr>
             <td><a href="<%- path.join(request.baseurl,request.parsed.pathname,item._id.toString()).replace('ext/dblogger','data') %>"><%- item._id %></a></td>
-            <td><%- item.title %></td>
-            <td><%- item.description %></td>
+            <td><%- item.hostname %></td>
+            <td><%- item.master_pid %></td>
+            <td><%- item.pid %></td>
+            <td><%- item.status %></td>
             <td>
-            
-            <form action="<%- path.join('/extension/crons/setactive',item._id.toString(),cronStatus) %>" method="POST">
-                <input type="hidden" name="_csrf" value="<%- token %>"/>
-                <input type="hidden" name="active" value="<%- item.active %>"/>
-                <section style="display:flex; flex-direction:row">
-                  <input type="submit" style="margin:0;" value="<%- item.active %> (Set to <%- cronStatus %>)"/>
-                </section>
-              </form>
-            </td>
-            <td> 
               Cron: <%- item.display_cron %> (<%- item.cron_interval %>) <br>
               Next: <%- item.display_next_cron %>
             </td>
-            <td><%- (item.internal_function)?'Internal':'Script' %></td>
+            <td><%- item.start_time %></td>
+            <td><%- item.complete_time %></td>
+            <td><%- item.duration %></td>
           </tr>
         <%});
       } else{%>
         <tr>
-          <td colspan="7">No <%- entityName.pluralCapitalized %></td>
+          <td colspan="9">No <%- entityName.pluralCapitalized %></td>
         </tr>
       <%}%>
       </tbody>
@@ -102,7 +97,7 @@ const entityPage = {
           </th>
           <th>Page <%- entityPage.currentpage %> of <%- entityPage.totalpages %>
           </th>
-          <th colspan="2">Showing <%- (entityPage.limit > entityPage.count)? entityPage.count: entityPage.limit %> of <%- entityPage.count %></th>
+          <th colspan="5">Showing <%- (entityPage.limit > entityPage.count)? entityPage.count: entityPage.limit %> of <%- entityPage.count %></th>
           <th>
           <% if(entityPage.currentpage <= entityPage.totalpages -1){ %>
             <a href="?pagenum=<%- entityPage.currentpage+1 %>">Next Page</a>
@@ -112,28 +107,6 @@ const entityPage = {
         </tr>
       </tfoot>
     </table>
-    <div>
-    <h4>Cron Config</h4>
-    <table>
-      <tr>
-        <td valign="top">
-          <p>When specifying your cron values you'll need to make sure that your values fall within the ranges. For instance, some cron's use a 0-7 range for the day of week where both 0 and 7 represent Sunday. We do not.</p>
-          <ul>
-            <li>Seconds: 0-59</li>
-            <li>Minutes: 0-59</li>
-            <li>Hours: 0-23</li>
-            <li>Day of Month: 1-31</li>
-            <li>Months: 0-11</li>
-            <li>Day of Week: 0-6</li>
-          </ul>
-        </td>
-        <td>
-          <pre><%- JSON.stringify(locals.cronConfig,null,2) %></pre>
-        </td>
-      </tr>
-    </table>
-    
-    </div>
   </section>
 </article>
 <%- include('../../../../app/views/shared/footer') %>

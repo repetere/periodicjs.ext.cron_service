@@ -1,0 +1,31 @@
+<%- include('../../../../app/views/shared/header') %>
+<% 
+const pluralize = periodic.viewHelper.pluralize;
+const entityFromURL = locals.request.originalurl.split('/')[locals.request.originalurl.split('/').length-2];
+const singularEntity = pluralize.singular(entityFromURL);
+// console.log({singularEntity,entityFromURL});
+const entitytype= singularEntity;
+%>
+<%
+// const pluralize = periodic.viewHelper.pluralize;
+const capitalize = periodic.viewHelper.capitalize;
+const path = periodic.viewHelper.path;
+%>
+<%- include('../../../periodicjs.ext.admin/views/shared/nav') %>
+<article>
+  <main>
+    <form action="<%- path.join(request.baseurl,request.parsed.pathname).replace('s/new','s') %>" method="POST">
+      <input type="hidden" name="_csrf" value="<%- token %>"/>
+      <section>
+        <h3><a href="<%- path.join(request.baseurl,request.parsed.pathname).replace('s/new','s') %>"><%- (capitalize(entitytype)) %></a> &rsaquo;  <small>Create <%- (capitalize(entitytype)) %></small></h3>
+        <input type="submit" value="Create">
+      </section>
+      <section>
+        <div>
+          <textarea name="genericdocjson"><%- JSON.stringify(locals.adminExt.models[entitytype].schemeModel,null,2) %></textarea>
+        </div>
+      </section>
+    </form>
+  </main>
+</article>
+<%- include('../../../../app/views/shared/footer') %>
