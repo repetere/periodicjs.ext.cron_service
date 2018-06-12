@@ -14,6 +14,7 @@ if (usesBasicAdmin || usesReactApp) {
   if (usesBasicAdmin) {
     const adminControllers = periodic.controllers.extension.get('periodicjs.ext.admin').admin;
     extRouter.use(adminControllers.adminResLocals);
+    extRouter.use(adminControllers.fixCodeMirrorSubmit);
   }
   extRouter.use(dataRouters.get('standard_cron').router);
   extRouter.use(dataRouters.get('standard_cronhoststatus').router);

@@ -1,0 +1,26 @@
+<%- include('../../../../app/views/shared/header') %>
+<%- include('../../../periodicjs.ext.admin/views/shared/nav') %>
+<%
+const pluralize = periodic.viewHelper.pluralize;
+const capitalize = periodic.viewHelper.capitalize;
+const entityFromURL = locals.request.originalurl.split('/')[locals.request.originalurl.split('/').length-1];
+const singularEntity = pluralize.singular(entityFromURL);
+%>
+<article>
+  <main>
+    <form method="POST">
+      <input type="hidden" name="_method" value="PUT" />
+      <input type="hidden" name="_csrf" value="<%- token %>"/>
+      <section>
+        <h3><a href="<%- request.originalurl.replace(data._id,'') %>"><%- (capitalize(data.entitytype||entitytype)) %></a> &rsaquo; <small>(<%- data.title || data.name || data._id %>)</small></h3>
+        <input type="submit" value="Edit">
+      </section>
+      <section>
+      <div>
+        <textarea name="genericdocjson"><%- JSON.stringify(data,null,2)%></textarea>
+      </div>
+      </section>
+    </form>
+  </main>
+</article>
+<%- include('../../../../app/views/shared/footer') %>
