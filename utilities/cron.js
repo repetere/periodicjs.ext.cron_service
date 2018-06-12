@@ -10,6 +10,7 @@ const luxon = require('luxon');
 const CoreControllerModule = require('periodicjs.core.controller');
 const cronMap = new Map();
 const CronJob = require('cron').CronJob;
+const appEnvironment = periodic.settings.application.environment;
 
 function getCronFilePath(assetFilename) {
   const extensionSettings = periodic.settings.extensions[ 'periodicjs.ext.cron_service' ];
@@ -166,16 +167,26 @@ function randomDelayPromise() {
   });
 }
 
+function availableHostsReducer (result, val)  { 
+  result[ val.hostname ] = (typeof result[ val.hostname ] === 'undefined')
+    ? 0 + ((val.status===cronStatuses.idle) ? 1 : 0)
+    : (val.status === cronStatuses.idle)
+      ? result[ val.hostname ] + 1
+      : result[ val.hostname ];
+  return result;
+}
+
 function cronTickFuction(options) {
   const { fn, cron, runtimeArgs, } = options;
   const extensionSettings = periodic.settings.extensions[ 'periodicjs.ext.cron_service' ];
   const CronHostDatas = periodic.datas.get('standard_cronhoststatus');
-  const hostname = os.hostname();
+  const hostname = options.hostname || os.hostname();
   const pid = process.pid.toString();
   let masterProcessId =             periodic.config.process.masterProcessId;
   const cron_id = cron._id;
   const cron_name = cron.name;
   const cron_interval = cron.cron_interval;
+  const numWorkers = options.numWorkers || periodic.settings.application.number_of_clusters || os.cpus().length;
   let cronHostUpdateDoc = {};
   let selectedHost;
   
@@ -188,12 +199,13 @@ function cronTickFuction(options) {
         .then(() => {
           return CronHostDatas.search({
             query: {
-              $and: [
-                {
-                  cron_name: { $ne: cron_name, },
-                  status: cronStatuses.idle,
-                },
-              ],
+              environment: appEnvironment,
+              // $and: [
+              //   {
+              //     cron_name: { $ne: cron_name, },
+              //     status: cronStatuses.idle,
+              //   },
+              // ],
             },
             sort: {
               hostname: 1,
@@ -207,26 +219,19 @@ function cronTickFuction(options) {
         })
         .then(cronHosts => {
           const allHosts = cronHosts;
-          const availableHosts = allHosts.filter(cronHost => cronHost.master_pid !== masterProcessId);
-          // console.log({
-          //   hostname, pid,
-          //   allHostsLengh:allHosts.length,
-          //   availableHostsLengh:availableHosts.length,
-          //   availableHosts: availableHosts.map(host => ({
-          //     pid: host.pid,
-          //     cron_name: host.cron_name,
-          //     status: host.status,
-          //     hostname: host.hostname,
-          //     master_pid: host.master_pid,
-          //   }))
-          // });
-          if (availableHosts.length === allHosts.length) {
-            selectedHost = allHosts[ 0 ];
-          } else {
-            selectedHost = availableHosts[ 0 ];
+          const hostnamePidCounts = allHosts
+            .reduce(availableHostsReducer, {});          
+          if (hostnamePidCounts[ hostname ] !== numWorkers) {
+            logger.info(`Cron(${cron_name}) not available on hostname:${hostname} has ${numWorkers} processes but only ${hostnamePidCounts[ hostname ]} available`);
+            delete hostnamePidCounts[ hostname ];
           }
-          //sort object by hostname,start_time,pid,status
-          // console.log({ hostname, pid, selectedHost });
+          const sortedPreferredHosts = Object.keys(hostnamePidCounts)
+            .sort() // sort alphabetically  
+            .sort((a, b) => hostnamePidCounts[ b ] - hostnamePidCounts[ a ])
+            .filter(hCount => hostnamePidCounts[ hCount ] > 0);
+          if (sortedPreferredHosts.length) {
+            selectedHost = allHosts.filter(host => host.hostname === sortedPreferredHosts[ 0 ])[ 0 ];
+          }
           return selectedHost;
         })
         .then(cronHostStatus => {
@@ -414,6 +419,12 @@ function findCronsForInitialization(options) {
   });
 }
 
+function useCronHosts(options) {
+  const extensionSettings = periodic.settings.extensions[ 'periodicjs.ext.cron_service' ];
+  const hostname = os.hostname();
+  return extensionSettings.use_cron_host_status && extensionSettings.available_hostnames.indexOf(hostname) > -1;
+}
+
 function configureCronHostStatus(options) {
   return new Promise((resolve, reject) => {
     try {
@@ -425,7 +436,8 @@ function configureCronHostStatus(options) {
       const pid = process.pid;
       let masterProcessId =             periodic.config.process.masterProcessId;
 
-      if (extensionSettings.use_cron_host_status && extensionSettings.available_hostnames.indexOf(hostname>-1)) {
+      console.log('useCronHosts()', useCronHosts());
+      if (useCronHosts()) {
         new Promise((resolveInner, rejectInner)=>{
           if(masterProcessId){
             // console.log('already has masterpid:',{masterProcessId});
@@ -466,6 +478,7 @@ function configureCronHostStatus(options) {
               newdoc: {
                 hostname,
                 pid,
+                environment: appEnvironment,
                 master_pid:masterProcessId.toString(),
                 status:cronStatuses.idle,
               },
@@ -501,7 +514,7 @@ function initializeCrons() {
         })
         .then(crons => {
           // console.log()
-          crons.map(cronDoc => {
+          const intializedCrons = crons.map(cronDoc => {
             const cron = cronDoc.toJSON();
             const task = createCronJob(cron);
             const cronObj = {
@@ -515,7 +528,11 @@ function initializeCrons() {
             }
             return cronObj;
           });
-          resolve(crons);
+          resolve(intializedCrons.map(cronOb => ({
+            _id: cronOb.cron._id.toString(),
+            name: cronOb.cron.name,
+            cron_interval: cronOb.cron.cron_interval,
+          })));
         })
         .catch(e => {
           logger.warn('Error starting crons', e);
@@ -535,4 +552,14 @@ module.exports = {
   initializeCrons,
   configureCronHostStatus,
   findCronsForInitialization,
+  decryptCronFile,
+  encryptCronFile,
+  check_cluster_safe_check,
+  createCronJob,
+  cronTickFuction,
+  randomDelayPromise,
+  cronCompleteFunction,
+  cronStatuses,
+  cleanupCronFiles,
+  useCronHosts,
 };

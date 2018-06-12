@@ -50,7 +50,7 @@ function runCron(req, res, next) {
     const crons = [cron,];
     let status = {};
     if (cron.internal_function) {
-      Promise.resolve(periodic.locals.container.get(containerName).crons[ cron.internal_function ](runtimeArgs))
+      Promise.resolve(periodic.locals.container.get(containerName).crons[ cron.internal_function ].call({stop:()=>{periodic.logger.debug(`Cron:${cron.name} has completed`)}},runtimeArgs))
         .then(status => {
           req.controllerData.status = status;
           next();
@@ -78,10 +78,14 @@ function runCron(req, res, next) {
 }
 
 function handleResponseData(req, res) {
-  res.send(routeUtils.formatResponse({
-    result: 'success',
-    data: Object.assign({}, req.params, req.query, req.controllerData),
-  }));
+  if (periodic.utilities.middleware.jsonReq(req)) {
+    res.send(routeUtils.formatResponse({
+      result: 'success',
+      data: Object.assign({}, req.params, req.query, req.controllerData),
+    }));
+  } else {
+    res.redirect('/b-admin/ext/cron_service/standard_crons?notification=status: running cron');
+  }
 }
 
 function setCronStatus(req, res, next) {

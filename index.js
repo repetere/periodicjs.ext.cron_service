@@ -11,7 +11,7 @@ module.exports = () => {
       if (extensionSettings.cronCheckFileEnabled) {
         logger.silly('Initialzing crons');
         utilities.cron.initializeCrons()
-          .then(logger.silly)
+          .then(loadedCrons=>logger.silly('Initialized Crons', loadedCrons))
           .catch(logger.error);
       } else {
         logger.silly('Not initialzing crons');
@@ -22,4 +22,4 @@ module.exports = () => {
   });
   
   return Promise.resolve(true);
-}
+};

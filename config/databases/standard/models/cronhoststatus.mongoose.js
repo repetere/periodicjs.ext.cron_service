@@ -10,6 +10,7 @@ const scheme = {
   complete_time: Date,
   status: String,
   duration: Schema.Types.Mixed,
+  environment: String,
   cron_interval: String,
   cron_interval_pretty: String,
   container: {

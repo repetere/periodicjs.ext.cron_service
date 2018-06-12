@@ -67,6 +67,7 @@ const notification = (request.query && request.query.notification)
           <th>Active</th>
           <th>Cron Interval</th>
           <th>Type</th>
+          <th>Run</th>
         </tr>
       </thead>
       <tbody>
@@ -95,6 +96,15 @@ const notification = (request.query && request.query.notification)
               Next: <%- item.display_next_cron %>
             </td>
             <td><%- (item.internal_function)?'Internal':'Script' %></td>
+            <td>
+              <form action="<%- path.join('/extension/crons',item._id.toString(),'run') %>" method="POST">
+                <input type="hidden" name="_csrf" value="<%- token %>"/>
+                <input type="hidden" name="active" value="<%- item.active %>"/>
+                <section style="display:flex; flex-direction:row">
+                  <input type="submit" style="margin:0;" value="Run"/>
+                </section>
+              </form>
+            </td>
           </tr>
         <%});
       } else{%>

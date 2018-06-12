@@ -57,6 +57,7 @@ const entityPage = {
           <th>Master PID</th>
           <th>ProcessId</th>
           <th>Status</th>
+          <th>Environment</th>
           <th>Cron Name</th>
           <th>Cron</th>
           <th>Start Time</th>
@@ -75,6 +76,7 @@ const entityPage = {
             <td><%- item.master_pid %></td>
             <td><%- item.pid %></td>
             <td><%- item.status %></td>
+            <td><%- item.environment %></td>
             <td><%- item.cron_name %></td>
             <td>
               Cron: <%- item.display_cron %> (<%- item.cron_interval %>) <br>
