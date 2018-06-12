@@ -193,19 +193,14 @@ function cronTickFuction(options) {
   return function onTick() {
     // console.log('RUNNING ON TICK FUNCTION', { pid, hostname, masterProcessId });
     const cronThisContext = this;
-    if (useCronHosts()) {
+
+    if (extensionSettings.use_cron_host_status) {
       //pull all host datas
       randomDelayPromise()
         .then(() => {
           return CronHostDatas.search({
             query: {
               environment: appEnvironment,
-              // $and: [
-              //   {
-              //     cron_name: { $ne: cron_name, },
-              //     status: cronStatuses.idle,
-              //   },
-              // ],
             },
             sort: {
               hostname: 1,
@@ -241,7 +236,7 @@ function cronTickFuction(options) {
             ? cronHostStatus.toJSON()
             : cronHostStatus;
           
-          if (cronHostUpdateDoc.hostname === hostname && cronHostUpdateDoc.pid === pid) {
+          if (cronHostUpdateDoc.hostname === hostname && cronHostUpdateDoc.pid === pid && useCronHosts()) {
             CronHostDatas.update({
               id: cronHostUpdateDoc._id,
               updatedoc: {
@@ -436,8 +431,8 @@ function configureCronHostStatus(options) {
       const pid = process.pid;
       let masterProcessId =             periodic.config.process.masterProcessId;
 
-      console.log('useCronHosts()', useCronHosts());
-      if (useCronHosts()) {
+      // console.log('useCronHosts()', useCronHosts());
+      if (extensionSettings.use_cron_host_status) {
         new Promise((resolveInner, rejectInner)=>{
           if(masterProcessId){
             // console.log('already has masterpid:',{masterProcessId});
