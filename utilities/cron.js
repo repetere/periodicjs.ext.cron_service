@@ -182,7 +182,7 @@ function cronTickFuction(options) {
   const CronHostDatas = periodic.datas.get('standard_cronhoststatus');
   const hostname = options.hostname || os.hostname();
   const pid = process.pid.toString();
-  let masterProcessId =             periodic.config.process.masterProcessId;
+  // let masterProcessId = periodic.config.process.masterProcessId;
   const cron_id = cron._id;
   const cron_name = cron.name;
   const cron_interval = cron.cron_interval;
@@ -193,7 +193,7 @@ function cronTickFuction(options) {
   return function onTick() {
     // console.log('RUNNING ON TICK FUNCTION', { pid, hostname, masterProcessId });
     const cronThisContext = this;
-    if (extensionSettings.use_cron_host_status) {
+    if (useCronHosts()) {
       //pull all host datas
       randomDelayPromise()
         .then(() => {
