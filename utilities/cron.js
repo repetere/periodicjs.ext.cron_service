@@ -230,7 +230,7 @@ function cronTickFunction(options) {
             selectedHost = allHosts.filter(host => host.hostname === sortedPreferredHosts[ 0 ])[ 0 ];
           }
           // console.log({hostnamePidCounts,sortedPreferredHosts,selectedHost})
-          if (selectedHost.hostname !== hostname) {
+          if (selectedHost && selectedHost.hostname !== hostname) {
             logger.info(`Cron(${cron_name}) not available on hostname:${hostname} has ${numWorkers} processes but only ${hostnamePidCounts[ hostname ]} available`, {
               hostnamePidCounts,
               selectedHost,
