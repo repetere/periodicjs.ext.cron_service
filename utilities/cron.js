@@ -220,7 +220,6 @@ function cronTickFunction(options) {
           const hostnamePidCounts = allHosts
             .reduce(availableHostsReducer, {});          
           if (hostnamePidCounts[ hostname ] !== numWorkers) {
-            logger.info(`Cron(${cron_name}) not available on hostname:${hostname} has ${numWorkers} processes but only ${hostnamePidCounts[ hostname ]} available`);
             delete hostnamePidCounts[ hostname ];
           }
           const sortedPreferredHosts = Object.keys(hostnamePidCounts)
@@ -231,7 +230,12 @@ function cronTickFunction(options) {
             selectedHost = allHosts.filter(host => host.hostname === sortedPreferredHosts[ 0 ])[ 0 ];
           }
           // console.log({hostnamePidCounts,sortedPreferredHosts,selectedHost})
-
+          if (selectedHost.hostname !== hostname) {
+            logger.info(`Cron(${cron_name}) not available on hostname:${hostname} has ${numWorkers} processes but only ${hostnamePidCounts[ hostname ]} available`, {
+              hostnamePidCounts,
+              selectedHost,
+            });
+          }
           return selectedHost;
         })
         .then(cronHostStatus => {
