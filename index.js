@@ -16,6 +16,14 @@ module.exports = () => {
       } else {
         logger.silly('Not initialzing crons');
       }
+      if (extensionSettings.refresh_crons) {
+        const t = setInterval(() => { 
+          logger.silly('refreshing crons');
+          utilities.cron.initializeCrons()
+            .then(loadedCrons=>logger.silly('Refreshed Crons', loadedCrons))
+            .catch(logger.error);
+        }, extensionSettings.refresh_crons);
+      }
     }	catch (e) {
       logger.warn('Error calling useCronTasks', e);
     }
