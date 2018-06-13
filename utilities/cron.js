@@ -495,11 +495,18 @@ function configureCronHostStatus(options) {
   });
 }
 
-function initializeCrons() {
+function initializeCrons(options) {
   return new Promise((resolve, reject) => { 
     try {
       const extensionSettings = periodic.settings.extensions[ 'periodicjs.ext.cron_service' ];
-      configureCronHostStatus()
+      Promise.resolve()
+        .then(() => {
+          if (options.skipHosts) {
+            return true;
+          } else {
+            return configureCronHostStatus();
+          }
+        })
         .then(status => {
           return findCronsForInitialization();
         })

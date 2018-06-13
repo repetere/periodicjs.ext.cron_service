@@ -19,7 +19,7 @@ module.exports = () => {
       if (extensionSettings.refresh_crons) {
         const t = setInterval(() => { 
           logger.silly('refreshing crons');
-          utilities.cron.initializeCrons()
+          utilities.cron.initializeCrons({ skipHosts:true, })
             .then(loadedCrons=>logger.silly('Refreshed Crons', loadedCrons))
             .catch(logger.error);
         }, extensionSettings.refresh_crons);
