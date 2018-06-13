@@ -499,7 +499,7 @@ function configureCronHostStatus(options) {
   });
 }
 
-function initializeCrons(options) {
+function initializeCrons(options = {}) {
   return new Promise((resolve, reject) => { 
     try {
       const extensionSettings = periodic.settings.extensions[ 'periodicjs.ext.cron_service' ];
