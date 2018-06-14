@@ -87,5 +87,5 @@
     "postuninstall": "cd ../../ && periodicjs rex periodicjs.ext.cron_service",
     "test": "mocha -R spec --recursive"
   },
-  "version": "6.6.5"
+  "version": "6.7.0"
 }

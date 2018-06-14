@@ -236,6 +236,14 @@ function cronTickFunction(options) {
               selectedHost,
             });
           }
+          cronMap.set('lastSelectedHost', {
+            lastRunCron: cron,
+            date: new Date(),
+            selectedHost: (selectedHost) ? {
+              hostname: selectedHost.hostname,
+              pid: selectedHost.pid,
+            } : undefined,
+          });
           return selectedHost;
         })
         .then(cronHostStatus => {

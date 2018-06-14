@@ -11,7 +11,7 @@ module.exports = () => {
       if (extensionSettings.cronCheckFileEnabled) {
         logger.silly('Initialzing crons');
         utilities.cron.initializeCrons({})
-          .then(loadedCrons=>logger.silly('Initialized Crons', loadedCrons))
+          .then(loadedCrons=>logger.silly('Initialized Crons', loadedCrons.length))
           .catch(logger.error);
       } else {
         logger.silly('Not initialzing crons');
@@ -20,7 +20,7 @@ module.exports = () => {
         const t = setInterval(() => { 
           logger.silly('refreshing crons');
           utilities.cron.initializeCrons({ skipHosts:true, })
-            .then(loadedCrons=>logger.silly('Refreshed Crons', loadedCrons))
+            .then(loadedCrons=>logger.silly('Refreshed Crons', loadedCrons.length))
             .catch(logger.error);
         }, extensionSettings.refresh_crons);
       }

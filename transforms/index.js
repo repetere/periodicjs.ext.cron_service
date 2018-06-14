@@ -7,6 +7,7 @@ function testPreTransform(req) {
     resolve(req);
   });
 }
+
 function addPrettyCronToHosts(req) {
   return new Promise((resolve, reject) => {
     try {
@@ -31,6 +32,7 @@ function addPrettyCronToHosts(req) {
     }
   });
 }
+
 function addPrettyCron(req) {
   return new Promise((resolve, reject) => {
     try {
@@ -39,8 +41,8 @@ function addPrettyCron(req) {
         req.controllerData.standard_crons.standard_crons.documents = req.controllerData.standard_crons.standard_crons.documents.map(cron => {
           const cronDoc = (cron.toObject) ? cron.toObject() : cron;
           const updatedCron = Object.assign({}, cronDoc, {
-            display_cron: prettyCron.toString(cronDoc.cron_interval,true),
-            display_next_cron: prettyCron.getNext(cronDoc.cron_interval,true),
+            display_cron: prettyCron.toString(cronDoc.cron_interval, true),
+            display_next_cron: prettyCron.getNext(cronDoc.cron_interval, true),
           });
           // console.log({ updatedCron, });
           return updatedCron;
@@ -52,7 +54,30 @@ function addPrettyCron(req) {
     } catch (e) {
       reject(e);
     }
+  });
+}
 
+function addCronMap(req) {
+  return new Promise((resolve, reject) => {
+    try {
+      req.controllerData = Object.assign({}, req.controllerData);
+      req.controllerData.cronMap = {};
+      for (var [ key, value ] of periodic.locals.extensions.get('periodicjs.ext.cron_service').cron.cronMap) {
+        req.controllerData.cronMap[ key.toString() ] = {
+          active: value.active,
+          cron: {
+            name:value.cron.name,
+            cron_interval:value.cron.cron_interval,
+            cron_interval_pretty:value.cron.cron_interval_pretty,
+          },
+          lastSelectedHost: value.lastSelectedHost,
+        };
+      }
+      // console.log('req.controllerData.cronMap', req.controllerData.cronMap);
+      resolve(req);
+    } catch (e) {
+      reject(e);
+    }
   });
 }
 
@@ -60,15 +85,15 @@ module.exports = {
   pre: {
     GET: {
       // '/some/route/path/:id':[testPreTransform]
-      '/b-admin/ext/cron_service/standard_crons':[testPreTransform,],
+      '/b-admin/ext/cron_service/standard_crons':[testPreTransform, ],
     },
     PUT: {
     },
   },
   post: {
     GET: {
-      '/b-admin/ext/cron_service/standard_crons':[addPrettyCron,],
-      '/b-admin/ext/cron_service/standard_cronhoststatuses':[addPrettyCronToHosts,],
+      '/b-admin/ext/cron_service/standard_crons':[addPrettyCron, addCronMap, ],
+      '/b-admin/ext/cron_service/standard_cronhoststatuses':[addPrettyCronToHosts, addCronMap, ],
     },
     PUT: {
     },

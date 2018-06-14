@@ -132,26 +132,35 @@ const notification = (request.query && request.query.notification)
       </tfoot>
     </table>
     <div>
-    <h4>Cron Config</h4>
-    <table>
-      <tr>
-        <td valign="top">
-          <p>When specifying your cron values you'll need to make sure that your values fall within the ranges. For instance, some cron's use a 0-7 range for the day of week where both 0 and 7 represent Sunday. We do not.</p>
-          <ul>
-            <li>Seconds: 0-59</li>
-            <li>Minutes: 0-59</li>
-            <li>Hours: 0-23</li>
-            <li>Day of Month: 1-31</li>
-            <li>Months: 0-11</li>
-            <li>Day of Week: 0-6</li>
-          </ul>
-        </td>
-        <td>
-          <pre><%- JSON.stringify(locals.cronConfig,null,2) %></pre>
-        </td>
-      </tr>
-    </table>
-    
+      <h4>Cron Config</h4>
+      <table>
+        <tr>
+          <td valign="top">
+            <p>When specifying your cron values you'll need to make sure that your values fall within the ranges. For instance, some cron's use a 0-7 range for the day of week where both 0 and 7 represent Sunday. We do not.</p>
+            <ul>
+              <li>Seconds: 0-59</li>
+              <li>Minutes: 0-59</li>
+              <li>Hours: 0-23</li>
+              <li>Day of Month: 1-31</li>
+              <li>Months: 0-11</li>
+              <li>Day of Week: 0-6</li>
+            </ul>
+          </td>
+          <td>
+            <pre><%- JSON.stringify(locals.cronConfig,null,2) %></pre>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div>
+      <h4>Cron Status</h4>
+      <table>
+        <tr>
+          <td>
+            <pre style="max-height:10rem; overflow:auto; overflow-x:hidden;"><%- JSON.stringify(locals.cronMap,null,2) %></pre>
+          </td>
+        </tr>
+      </table>
     </div>
   </section>
 </article>
