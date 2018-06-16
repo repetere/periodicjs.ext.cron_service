@@ -63,12 +63,13 @@ function addCronMap(req) {
       req.controllerData = Object.assign({}, req.controllerData);
       req.controllerData.cronMap = {};
       for (var [ key, value ] of periodic.locals.extensions.get('periodicjs.ext.cron_service').cron.cronMap) {
+        const cron = (value.cron) ? value.cron : {};
         req.controllerData.cronMap[ key.toString() ] = {
           active: value.active,
           cron: {
-            name:value.cron.name,
-            cron_interval:value.cron.cron_interval,
-            cron_interval_pretty:value.cron.cron_interval_pretty,
+            name: cron.name,
+            cron_interval: cron.cron_interval,
+            cron_interval_pretty: cron.cron_interval_pretty,
           },
           lastSelectedHost: value.lastSelectedHost,
         };
@@ -85,7 +86,7 @@ module.exports = {
   pre: {
     GET: {
       // '/some/route/path/:id':[testPreTransform]
-      '/b-admin/ext/cron_service/standard_crons':[testPreTransform, ],
+      // '/b-admin/ext/cron_service/standard_crons':[testPreTransform, ],
     },
     PUT: {
     },
