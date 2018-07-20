@@ -219,7 +219,7 @@ function cronTickFunction(options) {
           const allHosts = cronHosts;
           const hostnamePidCounts = allHosts
             .reduce(availableHostsReducer, {});          
-          if (hostnamePidCounts[ hostname ] !== numWorkers) {
+          if (extensionSettings.run_on_last_process===false && hostnamePidCounts[ hostname ] !== numWorkers) {
             delete hostnamePidCounts[ hostname ];
           }
           const sortedPreferredHosts = Object.keys(hostnamePidCounts)
