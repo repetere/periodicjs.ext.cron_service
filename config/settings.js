@@ -8,6 +8,7 @@ module.exports = {
     cronCheckFileEnabled: true,
     validate_container: false,
     run_on_last_process: false,
+    refresh_crons: false,
     filePaths: {
       cronPath: path.resolve(__dirname, '../../../content/files/crons'),
       useCronCheckFile: path.resolve(__dirname, '../../../content/files/croncheck.json'),

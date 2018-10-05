@@ -33,6 +33,9 @@ const scheme = {
   container: {
     type: Sequelize.STRING,
   },
+  label: {
+    type: Sequelize.STRING,
+  },
   command_line_arguments: {
     type: Sequelize.STRING,
   },
@@ -40,13 +43,19 @@ const scheme = {
     type: Sequelize.TEXT,
     // allowNull: false,
     get() {
-      return this.getDataValue('command_line_arguments') ? JSON.parse(this.getDataValue('command_line_arguments')) : {};
+      return this.getDataValue('runtime_options') ? JSON.parse(this.getDataValue('runtime_options')) : {};
     },
     set(val) {
-      this.setDataValue('command_line_arguments', JSON.stringify(val));
+      this.setDataValue('runtime_options', JSON.stringify(val));
     },
   },
   internal_function: {
+    type: Sequelize.STRING,
+  },
+  inline_function: {
+    type: Sequelize.STRING,
+  },
+  inline_test: {
     type: Sequelize.STRING,
   },
   asset_signature: {

@@ -30,6 +30,9 @@ const scheme = {
   command_line_arguments: String,
   runtime_options: Schema.Types.Mixed,
   internal_function: String,
+  inline_function: String,
+  inline_test: String,
+  label: String,
   asset_signature: {
     type: String,
     // required: true
