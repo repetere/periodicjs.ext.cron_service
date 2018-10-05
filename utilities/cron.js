@@ -511,6 +511,14 @@ function initializeCrons(options = {}) {
   return new Promise((resolve, reject) => { 
     try {
       const extensionSettings = periodic.settings.extensions[ 'periodicjs.ext.cron_service' ];
+      if (cronMap instanceof Map) { //$p.locals.extensions.get('periodicjs.ext.cron_service').cron.initializeCrons({ skipHosts:true,  })
+        // periodic.logger.silly('checking cronMap');
+        cronMap.forEach((cronObj, cron_id) => { 
+          // periodic.logger.silly('Stopping task in ' + cron_id);
+          cronObj.task.running = false;
+          clearTimeout(cronObj.task._timeout);
+        });
+      }
       Promise.resolve()
         .then(() => {
           if (options.skipHosts) {
