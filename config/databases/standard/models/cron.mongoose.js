@@ -29,6 +29,7 @@ const scheme = {
   },
   command_line_arguments: String,
   runtime_options: Schema.Types.Mixed,
+  time_zone: String,
   internal_function: String,
   inline_function: String,
   inline_test: String,

@@ -300,6 +300,7 @@ function createCronJob(cron) {
     cronTime: cron.cron_interval,
     onTick: cronTickFunction({ fn, cron, runtimeArgs, }),
     onComplete: cronCompleteFunction({ cron, }),
+    timeZone: cron.time_zone,
     start: false,
   });
   // task.addCallback(cronCompleteFunction({ cron, }));
@@ -416,7 +417,7 @@ function findCronsForInitialization(options) {
             active: true,
           }, {
             container: validate_container,
-          },],
+          }, ],
         } : {
           active: true,
         },
@@ -453,8 +454,7 @@ function configureCronHostStatus(options) {
           if (periodic.config.process.isClustered !== true) {
             masterProcessId = process.pid;
             resolveInner(process.pid);
-          }
-          else if(masterProcessId){
+          } else if(masterProcessId){
             return resolveInner(masterProcessId);
           } else{
             periodic.status.on('clustered-process-master-process-id', masterProcessIdFromMasterMsg=>{

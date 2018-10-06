@@ -33,6 +33,9 @@ const scheme = {
   container: {
     type: Sequelize.STRING,
   },
+  time_zone: {
+    type: Sequelize.STRING,
+  },
   label: {
     type: Sequelize.STRING,
   },

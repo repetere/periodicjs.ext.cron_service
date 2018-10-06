@@ -32,6 +32,7 @@ const scheme = {
   internal_function: String,
   inline_function: String,
   inline_test: String,
+  time_zone: String,
   label: String,
   asset_signature: {
     type: String,
