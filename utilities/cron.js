@@ -37,13 +37,13 @@ function downloadRemoteFiles(options) {
                 res
                   .pipe(writeStream)
                   .on('end', () => {
-                    logger.info('File Stream downloaded end event', asset.attributes.periodicFilename);
+                    logger.debug('File Stream downloaded end event', asset.attributes.periodicFilename);
                   })
                   .on('close', () => {
-                    logger.info('File Stream downloaded end close', asset.attributes.periodicFilename);
+                    logger.debug('File Stream downloaded end close', asset.attributes.periodicFilename);
                   })
                   .on('finish', () => {
-                    logger.info('File Stream downloaded end finish', asset.attributes.periodicFilename);
+                    logger.debug('File Stream downloaded end finish', asset.attributes.periodicFilename);
                   })
                   .on('error', e => {
                     reject(e);
@@ -144,12 +144,12 @@ function cronCompleteFunction(options) {
           });
         })
         .then(() => { 
-          periodic.logger.info(`Completed cron ${cron.name} on ${hostname}(pid:${pid})`);
+          periodic.logger.debug(`Completed cron ${cron.name} on ${hostname}(pid:${pid})`);
           this.start();//restart job
         })
         .catch(periodic.logger.error);
     } else if(cronMapObject) {
-      periodic.logger.info(`Completed cron ${cron.name} on ${hostname}(pid:${pid})`);
+      periodic.logger.debug(`Completed cron ${cron.name} on ${hostname}(pid:${pid})`);
       this.start();//restart job
 
     } else {
@@ -268,7 +268,7 @@ function cronTickFunction(options) {
               isPatch:true,
             });
             // console.log(`Running cron ${cron.name} on ${hostname}(pid:${pid})`);
-            periodic.logger.info(`Running cron ${cron.name} on ${hostname}(pid:${pid})`);
+            periodic.logger.debug(`Running cron ${cron.name} on ${hostname}(pid:${pid})`);
             return fn.call(cronThisContext, runtimeArgs);
           } else {
             return function passableCronFunction(){
@@ -279,7 +279,7 @@ function cronTickFunction(options) {
         })
         .catch(periodic.logger.error);
     } else {
-      periodic.logger.info(`Running cron ${cron.name} on ${hostname}(pid:${pid})`);
+      periodic.logger.debug(`Running cron ${cron.name} on ${hostname}(pid:${pid})`);
       return fn.call(cronThisContext, runtimeArgs);
     }
   };

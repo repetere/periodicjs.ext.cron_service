@@ -30,7 +30,7 @@
     "fs-extra": "^6.0.0",
     "jslint": "^0.12.0",
     "later": "^1.2.0",
-    "luxon": "^1.2.1",
+    "luxon": "^1.4.3",
     "minimist": "^1.2.0",
     "prettycron": "^0.10.0",
     "util-extend": "^1.0.3"
@@ -87,5 +87,5 @@
     "postuninstall": "cd ../../ && periodicjs rex periodicjs.ext.cron_service",
     "test": "mocha -R spec --recursive"
   },
-  "version": "6.10.0"
+  "version": "6.20.0"
 }
