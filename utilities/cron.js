@@ -408,6 +408,10 @@ function digestCronDocument(options) {
 function findCronsForInitialization(options) {
   return new Promise((resolve, reject) => {
     try {
+      if (periodic.settings.extensions[ 'periodicjs.ext.cron_service' ].cronCheckFileEnabled && fs.existsSync(periodic.settings.extensions[ 'periodicjs.ext.cron_service' ].filePaths.useCronCheckFile) === false) {
+        periodic.logger.debug('Skipping crons because of cron file check');
+        return resolve([]);
+      }
       const extensionSettings = periodic.settings.extensions[ 'periodicjs.ext.cron_service' ];
       const validate_container = extensionSettings.validate_container;
       const CronDatas = periodic.datas.get('standard_cron');
