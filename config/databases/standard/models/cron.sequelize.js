@@ -52,6 +52,16 @@ const scheme = {
       this.setDataValue('runtime_options', JSON.stringify(val));
     },
   },
+  cron_properties: {
+    type: Sequelize.TEXT,
+    // allowNull: false,
+    get() {
+      return this.getDataValue('cron_properties') ? JSON.parse(this.getDataValue('cron_properties')) : {};
+    },
+    set(val) {
+      this.setDataValue('cron_properties', JSON.stringify(val));
+    },
+  },
   internal_function: {
     type: Sequelize.STRING,
   },

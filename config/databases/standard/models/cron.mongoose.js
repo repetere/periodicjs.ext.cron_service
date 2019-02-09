@@ -29,6 +29,7 @@ const scheme = {
   },
   command_line_arguments: String,
   runtime_options: Schema.Types.Mixed,
+  cron_properties: Schema.Types.Mixed,
   time_zone: String,
   internal_function: String,
   inline_function: String,
