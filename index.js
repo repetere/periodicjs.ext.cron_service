@@ -28,6 +28,7 @@ module.exports = () => {
       logger.warn('Error calling useCronTasks', e);
     }
   });
-  
+  // utilities.queue.createFork({ name: 'crons', });
+
   return Promise.resolve(true);
 };

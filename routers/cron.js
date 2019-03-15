@@ -5,7 +5,6 @@ const controllers = require('../controllers');
 const cronController = controllers.cron;
 const cronRouter = periodic.express.Router();
 const oauth2serverControllers = periodic.controllers.extension.get('periodicjs.ext.oauth2server');
-const reactappControllers = periodic.controllers.extension.get('periodicjs.ext.reactapp');
 let ensureApiAuthenticated = oauth2serverControllers.auth.ensureApiAuthenticated;
 const defaultCronRouter = periodic.routers.get('standard_cron').router;
 
@@ -18,13 +17,16 @@ defaultCronRouter.post('/crons/:id/run',
   cronController.loadCron,
   cronController.runCron,
   cronController.handleResponseData);
-defaultCronRouter.post('/crons/add',
-  reactappControllers.helper.handleFileUpload,
-  reactappControllers.helper.fixCodeMirrorSubmit,
-  reactappControllers.helper.fixFlattenedSubmit,
-  cronController.createCron,
-  reactappControllers.helper.handleControllerDataResponse
-);
+if (periodic.controllers.extension.has('periodicjs.ext.reactapp')) {
+  const reactappControllers = periodic.controllers.extension.get('periodicjs.ext.reactapp');
+  defaultCronRouter.post('/crons/add',
+    reactappControllers.helper.handleFileUpload,
+    reactappControllers.helper.fixCodeMirrorSubmit,
+    reactappControllers.helper.fixFlattenedSubmit,
+    cronController.createCron,
+    reactappControllers.helper.handleControllerDataResponse
+  );
+}
 defaultCronRouter.post('/crons/setactive/:id/:status',
   ensureApiAuthenticated,
   cronController.loadCron,
