@@ -28,6 +28,10 @@ function getError({ error, status=401,  }) {
   });
 }
 
+const mockThis = {
+  stop: () => { },
+};
+
 const authMap = {
   go: 'open',
   process: 'client',
@@ -150,18 +154,25 @@ async function runScript({ script, req, }) {
 async function queueOnNewProcess({ type, name, options = {}, req = {}, script, priority, forkName = 'crons', }) {
   // console.log({ type, name, options, req, script, priority, forkName, })
   const forkedProcesses = periodic.locals.extensions.get('periodicjs.ext.cron_service').queue.forkedProcesses;
-  // const forkedProcesses = periodic.locals.container.get(CONTAINER_NAME).queue.forkedProcesses;
   const forked = forkedProcesses.get(forkName);
-  const cronJobThisContext = (this && typeof this.stop === 'function') ? this : mockThis;
-  if (forked) {
+
+  if (periodic.settings.extensions[ 'periodicjs.ext.cron_service' ].multi_thread_crons!==true || !forked) {
     options.req = req;
     options.script = script;
-    const task = { type, name, options, }; //type = feature/forecast/data, name=function name/importIntegrations, options
-    const queueType = priority ? 'compute-priority-add' : 'compute-add';
-    forked.send({ type: queueType, task, });
-    cronJobThisContext.stop();
-    return true;
-  } else return false;
+    return periodic.locals.container.get(CONTAINER_NAME).crons[ name ].call(mockThis, options);
+  } else {
+    // const forkedProcesses = periodic.locals.container.get(CONTAINER_NAME).queue.forkedProcesses;
+    const cronJobThisContext = (this && typeof this.stop === 'function') ? this : mockThis;
+    if (forked) {
+      options.req = req;
+      options.script = script;
+      const task = { type, name, options, }; //type = feature/forecast/data, name=function name/importIntegrations, options
+      const queueType = priority ? 'compute-priority-add' : 'compute-add';
+      forked.send({ type: queueType, task, });
+      cronJobThisContext.stop();
+      return true;
+    } else return false;
+  }
 }
 
 
