@@ -8,6 +8,9 @@ module.exports = {
     cronCheckFileEnabled: true,
     validate_container: false,
     run_on_last_process: false,
+    multi_thread_crons: false,
+    use_sockets_on_all_threads: true,
+    use_automation: false,
     refresh_crons: false,
     filePaths: {
       cronPath: path.resolve(__dirname, '../../../content/files/crons'),

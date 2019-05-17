@@ -50,7 +50,10 @@ function runCron(req, res, next) {
     const crons = [cron,];
     let status = {};
     if (cron.internal_function) {
-      Promise.resolve(periodic.locals.container.get(containerName).crons[ cron.internal_function ].call({stop:()=>{periodic.logger.debug(`Cron:${cron.name} has completed`)}},runtimeArgs))
+      const cronFunction = periodic.locals.extensions.get('periodicjs.ext.cron_service').automation[ cron.internal_function ]
+        ? periodic.locals.extensions.get('periodicjs.ext.cron_service').automation[ cron.internal_function ]
+        : periodic.locals.container.get(containerName).crons[ cron.internal_function ];
+      Promise.resolve(cronFunction.call({stop:()=>{periodic.logger.debug(`Cron:${cron.name} has completed`)}},runtimeArgs))
         .then(status => {
           req.controllerData.status = status;
           next();

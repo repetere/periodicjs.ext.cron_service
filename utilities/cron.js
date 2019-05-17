@@ -290,10 +290,16 @@ function createCronJob(cron) {
   const modulePath = (cron.asset)
     ? getCronFilePath(cron.asset.attributes.periodicFilename)
     : undefined;
+  let cronFunction;
+  if (cron.internal_function) {
+    cronFunction = periodic.locals.extensions.get('periodicjs.ext.cron_service').automation[ cron.internal_function ]
+      ? periodic.locals.extensions.get('periodicjs.ext.cron_service').automation[ cron.internal_function ]
+      : periodic.locals.container.get(containerName).crons[ cron.internal_function ];
+  }
   const runtimeArgs = Object.assign({},
     cron.runtime_options);
   const fn = (cron.internal_function)
-    ? periodic.locals.container.get(containerName).crons[ cron.internal_function ]//.bind(null, runtimeArgs)
+    ? cronFunction //.bind(null, runtimeArgs)
     : require(modulePath).script(periodic);//.bind(null, runtimeArgs);
   // console.log({ fn, });
   const task = new CronJob({

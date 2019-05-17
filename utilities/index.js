@@ -1,8 +1,12 @@
 'use strict';
-const data = require('./data');
+const automation = require('./automation');
 const cron = require('./cron');
+const data = require('./data');
+const queue = require('./queue');
 
 module.exports = {
-  data,
+  automation,
   cron,
+  data,
+  queue,
 };

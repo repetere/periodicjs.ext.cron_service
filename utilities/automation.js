@@ -1,5 +1,6 @@
 
 const periodic = require('periodicjs');
+const mongoose = require('mongoose');
 const capitalize = require('capitalize');
 const oauth2server = periodic.controllers.extension.get('periodicjs.ext.oauth2server');
 const routeUtils = periodic.utilities.routing;
@@ -35,22 +36,38 @@ const authMap = {
 
 async function runAutomation(req, res) {
   try {
-    const mongoose = require('mongoose');
+    let cronFunction;
     const { auth, id, } = req.params;
     const automationScript = await periodic.datas.get('standard_cron').load({ 
-      query:getIdQuery(req.params.id),
+      query:getIdQuery(id),
     });
+    let automationOptions = Object.assign({}, { req }, automationScript.runtime_options);
     utilities = utilities || periodic.locals.container.get(CONTAINER_NAME);
 
     if (!automationScript) return res.send(getError({ error: 'Invalid Automation', }));
-    const cronAuth = automationScript.runtime_options.req_body.cron_properties.auth;
+    const cronAuth = automationScript.cron_properties.auth;
     if (cronAuth !== authMap[ auth ]) return res.send(getError({ error: 'Invalid Automation Authentication', }));
-    const runAutomation = utilities.crons.runScript.bind({
+
+    if (automationScript.internal_function == 'queueOnNewProcess') {
+      cronFunction = queueOnNewProcess;
+      automationOptions = Object.assign({}, {
+        req: {
+          query:req.query,
+          body:req.body,
+        }
+      }, automationScript.runtime_options);
+    } else {
+      cronFunction = automationScript.internal_function !== 'runScript'
+        ? periodic.locals.container.get(CONTAINER_NAME).crons[ automationScript.internal_function ]
+        : runScript;
+    }
+      
+    const runAutomation = cronFunction.bind({
       stop: () => {
         periodic.logger.debug('Automation ran to completion'); 
       },
     });
-    const data = await runAutomation({ req, script: automationScript.runtime_options.script, });
+    const data = await runAutomation(automationOptions);
     return res.send(routeUtils.formatResponse({
       result: 'success',
       data,
@@ -86,7 +103,7 @@ async function authenticateAutomation(req, res, next) {
   }
 }
 
-function downloadFile(req, res) {
+async function downloadFile(req, res) {
   return periodic.core.files.downloadAssetMiddlewareHandler({
     periodic,
   })(req, res);
@@ -95,10 +112,15 @@ function downloadFile(req, res) {
 async function runScript({ script, req, }) {
   const cronJobThisContext = this;
   try {
+    const Promisie = require('promisie');
+    const vm = require('vm');
+    const jsonx = require('jsonx');
+    const puppeteer = require('puppeteer');
+    const request = require('request');
+    const $ = require('cheerio');
+    const randomUA = require('modern-random-ua');
     const sandbox = {
       asyncMethod: async () => { },
-      datasets,
-      helpers:functionprops,
       periodic,
       request,
       Promisie,
@@ -106,14 +128,10 @@ async function runScript({ script, req, }) {
       randomUA,
       $p:periodic,
       puppeteer,
-      rebulma,
-      rjx,
-      crons,
+      jsonx,
       req,
-      importHelpers:helpers,
       logger:periodic.logger,
       console,
-      scripts,
     };
     vm.createContext(sandbox);
     vm.runInContext(`asyncMethod = async function _asyncMethod(){
@@ -130,7 +148,9 @@ async function runScript({ script, req, }) {
 }
 
 async function queueOnNewProcess({ type, name, options = {}, req = {}, script, priority, forkName = 'crons', }) {
-  const forkedProcesses = periodic.locals.container.get(CONTAINER_NAME).queue.forkedProcesses;
+  // console.log({ type, name, options, req, script, priority, forkName, })
+  const forkedProcesses = periodic.locals.extensions.get('periodicjs.ext.cron_service').queue.forkedProcesses;
+  // const forkedProcesses = periodic.locals.container.get(CONTAINER_NAME).queue.forkedProcesses;
   const forked = forkedProcesses.get(forkName);
   const cronJobThisContext = (this && typeof this.stop === 'function') ? this : mockThis;
   if (forked) {
@@ -149,4 +169,6 @@ module.exports = {
   runAutomation,
   authenticateAutomation,
   downloadFile,
+  runScript,
+  queueOnNewProcess,
 };

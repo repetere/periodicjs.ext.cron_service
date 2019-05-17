@@ -11,7 +11,8 @@ async function getQueueStatus({ forkName = 'crons',  }) {
   
   return new Promise((resolve, reject) => {
     try {
-      const forkedProcesses = periodic[ '_utilities_container_repetere-client' ].queue.forkedProcesses;
+      // const forkedProcesses = periodic[ '_utilities_container_repetere-client' ].queue.forkedProcesses;
+      const forkedProcesses = periodic.locals.extensions.get('periodicjs.ext.cron_service').queue.forkedProcesses;
       const forked = forkedProcesses.get(forkName);
       if (isComputeForked !== true) {
         let t = setInterval(() => {
@@ -39,7 +40,7 @@ async function createFork({ name='crons', }) {
   // console.log({ isForked, });
   if (isComputeForked !== true) {
     // console.log('CREATING FORK',periodic.config);
-    const forked = fork(path.join(periodic.config.app_root, 'compute.js'), [`--e ${periodic.config.process.runtime}`,], { env: { NODE_ENV: periodic.config.process.runtime, }, });
+    const forked = fork(path.join(__dirname, 'compute.js'), [`--e ${periodic.config.process.runtime}`,], { env: { NODE_ENV: periodic.config.process.runtime, }, });
     forked.on('message', msg => {
       const { event, payload = {}, } = msg;
       const { message, meta, status, level = 'silly', } = payload;

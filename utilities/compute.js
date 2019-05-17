@@ -3,12 +3,12 @@ const GLOBAL_PROMISE = Promise;
 require('newrelic');
 Promise = GLOBAL_PROMISE;
 const periodic = require('periodicjs');
+const periodicInitServers = require('periodicjs/lib/init/server');
 const isForked = typeof process.send === 'function';
 const isComputeForked = periodic.config.computeForked;
-
-const periodicContainerSettings = periodic.settings.container;
-const CONTAINER_NAME = periodicContainerSettings.name;
-const settings = periodicContainerSettings[ CONTAINER_NAME ];
+let periodicContainerSettings;
+let CONTAINER_NAME;
+let settings;
 // let counter = 0;
 let tasks = 0;
 process.argv.push('--status');
@@ -25,6 +25,7 @@ const mockThis = {
 
 const computeQueue = async.queue(function queueFunction({ task, }, callback) {
   const { type, name, options, } = task;
+  // console.log({ task });
   process.send({
     event: 'compute-log', 
     payload:{
@@ -134,8 +135,17 @@ if (isForked) {
   });
 }
 async function main() {
-  const periodicInitStatus = await periodic.init({ debug: true, cli: true, computeForked:true, });
+  const periodicInitStatus = await periodic.init({ debug: true, cli: true, computeForked: true, });
   // console.log({ periodicInitStatus, });
+  if (periodic.settings.extensions[ 'periodicjs.ext.cron_service' ].use_sockets_on_all_threads) {
+    await periodicInitServers.startSocketIOserver.call(periodic);
+  }
+  // use_sockets_on_all_threads
+
+
+  periodicContainerSettings = periodic.settings.container;
+  CONTAINER_NAME = periodicContainerSettings.name;
+  settings = periodicContainerSettings[ CONTAINER_NAME ];
   process.send({
     event: 'compute-log', 
     payload:{

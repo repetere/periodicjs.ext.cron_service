@@ -1,0 +1,5 @@
+https://local.server.io:8900/extension/automation/auth/auto/go/test-webhook?format=json
+https://local.server.io:8900/extension/automation/auth/auto/go/test-email-twitter-automation?format=json&emails=
+https://local.server.io:8900/extension/automation/auth/app/process/bqs/?format=json
+https://local.server.io:8900/extension/automation/auth/app/process/test-webhook
+

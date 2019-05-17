@@ -1,0 +1,43 @@
+{
+  "_id" : ObjectId("5c81fad613757e35d69e1da0"),
+  "active" : false,
+  "container" : "periodicjs.container.default",
+  "entitytype" : "cron",
+  "name" : "test-email-twitter-automation",
+  "title" : "test email twitter automation",
+  "author" : "5c3ff9ff9d9f2306704979f5",
+  "content" : "Cron for test email twitter automation",
+  "cron_interval" : "0 0 5,6 * * *",
+  "cron_interval_pretty" : "05:00 and 06:00 every day",
+  "label" : "script",
+  "command_line_arguments" : "",
+  "runtime_options" : {
+      "script" : "//script\nconst socketIOServer = $p.servers.get('socket.io') || {};\nconst { server: socketServer, sockets: socketConnections, } = socketIOServer;\nconst io = socketServer;\nconst req_query = req.query;\nconst emails = req_query.emails ||'';\n\nconst userAgent = randomUA.generate();\n// const TZ = store.time_zone ;\n// const store_name = store.store_name ;\n// periodic.logger.debug({ userAgent, TZ, store_name, });\n// const env = Object.assign({}, process.env, { TZ, });\nconst browser = await puppeteer.launch({\n  args: ['--no-sandbox',],\n  headless: false,\n  userAgent,\n//   env,\n});\nbrowser.on('targetchanged', target => periodic.logger.debug('browser.on targetchanged', target.url()), {\n  clientlog: true,\n});\nconst page = await browser.newPage();\npage.setViewport({ width: 1280, height: 926, });\nawait page.goto('https://twitter.com/CBinsights/');\ntry{\n  const [loginResponse,] = await Promise.race([\n    page.waitForNavigation({ waitUntil:'load', }),\n    page.waitFor(10000),\n  //  page.click('#header div.content div.column.column-fill.flex-align-right a', {}),\n  ]);\n} catch(e){\n  console.error('error loading content');\n}\nconst partechTweetsHTML = await page.content();\nconsole.log({partechTweetsHTML})\n\nconst $Tweets = $.load(partechTweetsHTML);\nconsole.log({$Tweets})\n//const tweetContainerHTML = $('ol.stream-items',$Tweets).html();\n//const tweetContainerHTML = $('ol#stream-items-id',$Tweets).html();\nconst tweetContainerHTML = $Tweets('ol#stream-items-id').html();\nbrowser.close();\n\nconsole.log({tweetContainerHTML})\n\n//document.querySelectorAll('li.stream-item')\nconst recipients = ['yaw@repetere.io'].concat(emails.split(','));\n\nconst webhookEmail = {\n  from: periodic.settings.periodic.emails.server_from_address,\n  to: recipients,\n  subject: 'Test Webhook Email',\n  generateTextFromHTML: true,\n  html: tweetContainerHTML ||'tweet html',\n};\nconst emailStatus = await periodic.core.mailer.sendEmail(webhookEmail);\n//console.log('hello',{req_query})\nio.sockets.emit('stdout', {\n  function: 'createNotification',\n  props: [\n    {\n      type: 'info',\n      text: 'From Sent Webhook',\n      timeout:5000,\n    },\n  ],\n});\n\n\nreturn emailStatus;",
+      "req_body" : {
+          "cron" : {
+              "title" : "test email twitter automation"
+          },
+          "cron_properties" : {
+              "end_point" : "on",
+              "auth" : "open"
+          },
+          "cron_interval" : {
+              "seconds" : "0",
+              "minutes" : "0",
+              "hours" : "5,6",
+              "days_of_month" : "*",
+              "months" : "*",
+              "days_of_week" : "*"
+          },
+          "cron_interval_pretty" : "05:00:00 and 06:00:00 every day",
+          "runtime_options" : "",
+          "internal_function" : "runScript",
+          "script" : "//script\nconst socketIOServer = $p.servers.get('socket.io') || {};\nconst { server: socketServer, sockets: socketConnections, } = socketIOServer;\nconst io = socketServer;\nconst req_query = req.query;\nconst emails = req_query.emails ||'';\n\nconst userAgent = randomUA.generate();\n// const TZ = store.time_zone ;\n// const store_name = store.store_name ;\n// periodic.logger.debug({ userAgent, TZ, store_name, });\n// const env = Object.assign({}, process.env, { TZ, });\nconst browser = await puppeteer.launch({\n  args: ['--no-sandbox',],\n  headless: false,\n  userAgent,\n//   env,\n});\nbrowser.on('targetchanged', target => periodic.logger.debug('browser.on targetchanged', target.url()), {\n  clientlog: true,\n});\nconst page = await browser.newPage();\npage.setViewport({ width: 1280, height: 926, });\nawait page.goto('https://twitter.com/CBinsights/');\ntry{\n  const [loginResponse,] = await Promise.race([\n    page.waitForNavigation({ waitUntil:'load', }),\n    page.waitFor(10000),\n  //  page.click('#header div.content div.column.column-fill.flex-align-right a', {}),\n  ]);\n} catch(e){\n  console.error('error loading content');\n}\nconst partechTweetsHTML = await page.content();\nconsole.log({partechTweetsHTML})\n\nconst $Tweets = $.load(partechTweetsHTML);\nconsole.log({$Tweets})\n//const tweetContainerHTML = $('ol.stream-items',$Tweets).html();\n//const tweetContainerHTML = $('ol#stream-items-id',$Tweets).html();\nconst tweetContainerHTML = $Tweets('ol#stream-items-id').html();\nbrowser.close();\n\nconsole.log({tweetContainerHTML})\n\n//document.querySelectorAll('li.stream-item')\nconst recipients = ['yaw@repetere.io'].concat(emails.split(','));\n\nconst webhookEmail = {\n  from: periodic.settings.periodic.emails.server_from_address,\n  to: recipients,\n  subject: 'Test Webhook Email',\n  generateTextFromHTML: true,\n  html: tweetContainerHTML ||'tweet html',\n};\nconst emailStatus = await periodic.core.mailer.sendEmail(webhookEmail);\n//console.log('hello',{req_query})\nio.sockets.emit('stdout', {\n  function: 'createNotification',\n  props: [\n    {\n      type: 'info',\n      text: 'From Sent Webhook',\n      timeout:5000,\n    },\n  ],\n});\n\n\nreturn emailStatus;"
+      }
+  },
+  "internal_function" : "runScript",
+  "asset_signature" : "",
+  "createdat" : ISODate("2019-03-08T05:17:10.680Z"),
+  "updatedat" : ISODate("2019-03-21T14:18:17.991Z"),
+  "__v" : 0
+}

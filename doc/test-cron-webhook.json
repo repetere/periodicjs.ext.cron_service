@@ -1,0 +1,43 @@
+{
+  "_id" : ObjectId("5c81f4f513757e35d69e1d7b"),
+  "active" : false,
+  "container" : "periodicjs.container.default",
+  "entitytype" : "cron",
+  "name" : "test-webhook",
+  "title" : "test webhook",
+  "author" : "5c3ff9ff9d9f2306704979f5",
+  "content" : "Cron for test webhook",
+  "cron_interval" : "0 0 5,6 * * *",
+  "cron_interval_pretty" : "05:00 and 06:00 every day",
+  "label" : "script",
+  "command_line_arguments" : "",
+  "runtime_options" : {
+      "script" : "//script\nconst socketIOServer = $p.servers.get('socket.io') || {};\nconst { server: socketServer, sockets: socketConnections, } = socketIOServer;\nconst io = socketServer;\nconst req_query = req.query;\n//console.log('hello',{req_query})\nio.sockets.emit('stdout', {\n  function: 'createNotification',\n  props: [\n    {\n      type: 'info',\n      text: 'From Webhook',\n      timeout:5000,\n    },\n  ],\n});",
+      "req_body" : {
+          "cron" : {
+              "title" : "test webhook"
+          },
+          "cron_properties" : {
+              "end_point" : "on",
+              "auth" : "open"
+          },
+          "cron_interval" : {
+              "seconds" : "0",
+              "minutes" : "0",
+              "hours" : "5,6",
+              "days_of_month" : "*",
+              "months" : "*",
+              "days_of_week" : "*"
+          },
+          "cron_interval_pretty" : "05:00:00 and 06:00:00 every day",
+          "runtime_options" : "",
+          "internal_function" : "runScript",
+          "script" : "//script\nconst socketIOServer = $p.servers.get('socket.io') || {};\nconst { server: socketServer, sockets: socketConnections, } = socketIOServer;\nconst io = socketServer;\nconst req_query = req.query;\n//console.log('hello',{req_query})\nio.sockets.emit('stdout', {\n  function: 'createNotification',\n  props: [\n    {\n      type: 'info',\n      text: 'From Webhook',\n      timeout:5000,\n    },\n  ],\n});"
+      }
+  },
+  "internal_function" : "runScript",
+  "asset_signature" : "",
+  "createdat" : ISODate("2019-03-08T04:52:05.643Z"),
+  "updatedat" : ISODate("2019-03-08T05:16:35.577Z"),
+  "__v" : 0
+}

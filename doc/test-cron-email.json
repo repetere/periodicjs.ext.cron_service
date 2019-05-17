@@ -1,0 +1,39 @@
+{
+  "_id" : ObjectId("5ca62bc58697c53fc054f4e0"),
+  "active" : false,
+  "container" : "periodicjs.container.default",
+  "entitytype" : "cron",
+  "name" : "test-email-report-pdf",
+  "title" : "TEST Email Report PDF",
+  "author" : "5b05f0ab4fcb430500ee401b",
+  "content" : "Cron for TEST Email Report PDF",
+  "cron_interval" : "0 0 5,6 * * *",
+  "cron_interval_pretty" : "05:00 and 06:00 every day",
+  "label" : "script",
+  "command_line_arguments" : "",
+  "runtime_options" : {
+      "script" : "const screenshotPath = `${$p.config.app_root}/content/files/screenshots/test`;\nconst pdfPath = screenshotPath+'.pdf';\nconst pngPath = screenshotPath+'.png';\nconst csvPath = screenshotPath+'.csv';\nfunction toCSV(data,options){\n  return new Promise((resolve,reject)=>{\n    csvConverter.json2csv(data, \n      (err,csv)=>{\n      \tif(err)reject(err);\n        else resolve(csv);\n      }, options);\n  });\n}\n\nawait Promise.all([\n\tensureFile(pdfPath),\n\tensureFile(pngPath),\n\tensureFile(csvPath),\n])\nconst browser = await puppeteer.launch({\n  args: ['--no-sandbox',],\n  headless: true,\n  //  userAgent,\n  //   env,\n});\ntry{\n  const page = await browser.newPage();\n  const reportHTML = await getReportHTML({\n    req: {\n      params:{ id:'5ca63b44250dbd49780e4396'},\n      body:{\n        recipients:[],\n        filters:{},\n      },\n    }, \n    justHTML:true,\n  })\n  const rawDataObject = await datasets.dataset.getDatasetEntity({\n        entityid: '5ca63997250dbd49780e4365',\n        req: {\n          query: {},\n        },\n        cached: false,\n      });\n  const rawData = rawDataObject.dataset;\n  const csvData = await toCSV(rawData);\n  await outputFile(csvPath,csvData);\n  page.setContent(reportHTML);\n\n  ///page.setViewport({ width: 1280, height: 926, });\n  await page.screenshot({ path: pngPath, });\n  await page.pdf({ path: pdfPath, });\n  const recipients = ['yaw@repetere.io'];\n\n  browser.close();\n   const webhookEmail = {\n    from: periodic.settings.periodic.emails.server_from_address,\n    to: recipients,\n    subject: 'Test Attachment Email',\n    generateTextFromHTML: true,\n    html:'attachmet html',\n    attachments:[\n      {\n        path:pdfPath,\n      },\n      {\n        path:pngPath,\n      },\n      {\n        path:csvPath,\n      },\n    ]\n  };\n  const emailStatus = await periodic.core.mailer.sendEmail(webhookEmail);\n  return emailStatus;\n\n  /*\n \n  \n  return {\n    result:'success',\n    data: {status:'ok'}\n  };\n  */\n} catch(e){\n    browser.close();\n\tthrow e;\n}\n\n",
+      "req_body" : {
+          "cron" : {
+              "title" : "TEST Email Report PDF"
+          },
+          "cron_interval" : {
+              "seconds" : "0",
+              "minutes" : "0",
+              "hours" : "5,6",
+              "days_of_month" : "*",
+              "months" : "*",
+              "days_of_week" : "*"
+          },
+          "cron_interval_pretty" : "05:00:00 and 06:00:00 every day",
+          "runtime_options" : "",
+          "internal_function" : "runScript",
+          "script" : "const screenshotPath = `${$p.config.app_root}/content/files/screenshots/test`;\nconst pdfPath = screenshotPath+'.pdf';\nconst pngPath = screenshotPath+'.png';\nconst csvPath = screenshotPath+'.csv';\nfunction toCSV(data,options){\n  return new Promise((resolve,reject)=>{\n    csvConverter.json2csv(data, \n      (err,csv)=>{\n      \tif(err)reject(err);\n        else resolve(csv);\n      }, options);\n  });\n}\n\nawait Promise.all([\n\tensureFile(pdfPath),\n\tensureFile(pngPath),\n\tensureFile(csvPath),\n])\nconst browser = await puppeteer.launch({\n  args: ['--no-sandbox',],\n  headless: true,\n  //  userAgent,\n  //   env,\n});\ntry{\n  const page = await browser.newPage();\n  const reportHTML = await getReportHTML({\n    req: {\n      params:{ id:'5ca63b44250dbd49780e4396'},\n      body:{\n        recipients:[],\n        filters:{},\n      },\n    }, \n    justHTML:true,\n  })\n  const rawDataObject = await datasets.dataset.getDatasetEntity({\n        entityid: '5ca63997250dbd49780e4365',\n        req: {\n          query: {},\n        },\n        cached: false,\n      });\n  const rawData = rawDataObject.dataset;\n  const csvData = await toCSV(rawData);\n  await outputFile(csvPath,csvData);\n  page.setContent(reportHTML);\n\n  ///page.setViewport({ width: 1280, height: 926, });\n  await page.screenshot({ path: pngPath, });\n  await page.pdf({ path: pdfPath, });\n  const recipients = ['yaw@repetere.io'];\n\n  browser.close();\n   const webhookEmail = {\n    from: periodic.settings.periodic.emails.server_from_address,\n    to: recipients,\n    subject: 'Test Attachment Email',\n    generateTextFromHTML: true,\n    html:'attachmet html',\n    attachments:[\n      {\n        path:pdfPath,\n      },\n      {\n        path:pngPath,\n      },\n      {\n        path:csvPath,\n      },\n    ]\n  };\n  const emailStatus = await periodic.core.mailer.sendEmail(webhookEmail);\n  return emailStatus;\n\n  /*\n \n  \n  return {\n    result:'success',\n    data: {status:'ok'}\n  };\n  */\n} catch(e){\n    browser.close();\n\tthrow e;\n}\n\n"
+      }
+  },
+  "internal_function" : "runScript",
+  "asset_signature" : "",
+  "createdat" : ISODate("2019-04-04T16:07:33.915Z"),
+  "updatedat" : ISODate("2019-04-04T17:45:38.025Z"),
+  "__v" : 0
+}
