@@ -40,14 +40,22 @@ async function createFork({ name='crons', }) {
   // console.log({ isForked, });
   if (isComputeForked !== true) {
     // console.log('CREATING FORK',periodic.config);
-    const forked = fork(path.join(__dirname, 'compute.js'), [`--e ${periodic.config.process.runtime}`,], { env: { NODE_ENV: periodic.config.process.runtime, }, });
+    const forked = fork(path.join(__dirname, 'compute.js'), [ `--e ${periodic.config.process.runtime}`, ], { env: { NODE_ENV: periodic.config.process.runtime, }, });
     forked.on('message', msg => {
+      
+      const socketIOServer = periodic.servers.get('socket.io') || {};
+      const { server: socketServer, sockets: socketConnections, } = socketIOServer;
+      const io = socketServer;
+      
       const { event, payload = {}, } = msg;
       const { message, meta, status, level = 'silly', } = payload;
       switch (event) {
       case 'compute-log':
         meta.status = status;
         periodic.logger[ level ](message, meta);
+        break;
+      case 'compute-emit':
+        io.sockets.emit('stdout', message);
         break;
       }
       // console.log('message from child', { msg, });
