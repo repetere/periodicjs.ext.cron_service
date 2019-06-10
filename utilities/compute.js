@@ -13,6 +13,9 @@ let settings;
 let tasks = 0;
 process.argv.push('--status');
 process.argv.push('--cli');
+let computeQueue;
+const { THREAD_FORK_NAME, MASTER_THREAD_PID, } = process.env;
+const THREAD_PID = process.pid.toString();
 
 const mockThis = {
   stop: () => { },
@@ -23,30 +26,7 @@ const mockThis = {
 //   isComputeForked,
 // });
 
-const computeQueue = async.queue(function queueFunction({ task, }, callback) {
-  const { type, name, options, } = task;
-  // console.log({ task });
-  process.send({
-    event: 'compute-log', 
-    payload:{
-      message: `Adding to computation Queue: ${type}`,
-      meta: {
-        task,
-        clientlog: true,
-      },
-      status:getQueueStatus(),
-    },
-  });
-  try {
-    periodic.locals.container.get(CONTAINER_NAME).crons[ name ].call(mockThis, options)
-      .then(result => {
-        callback(null, result);
-      })
-      .catch(callback);
-  } catch (e) {
-    callback(e);
-  }
-}, 2);
+
 
 function getQueueStatus() {
   const workers = computeQueue.workersList();
@@ -60,21 +40,9 @@ function getQueueStatus() {
     saturated: computeQueue.saturated,
     concurrency: computeQueue.concurrency,
     tasks,
+    THREAD_FORK_NAME, MASTER_THREAD_PID, THREAD_PID,
   };
 }
-
-computeQueue.drain = function queueDrain() {
-  process.send({
-    event: 'compute-log',
-    payload: {
-      message: 'All queue computations have been processed',
-      meta: {
-        clientlog: true,
-      },
-      status:getQueueStatus(),
-    },
-  });
-};
 
 
 if (isForked) {
@@ -134,10 +102,12 @@ if (isForked) {
     // console.log('Message from parent:', msg);
   });
 }
+
 async function main() {
   const periodicInitStatus = await periodic.init({ debug: true, cli: true, computeForked: true, });
-  // console.log({ periodicInitStatus, });
-  if (periodic.settings.extensions[ 'periodicjs.ext.cron_service' ].use_sockets_on_all_threads) {
+  const cronExtensionSettings = periodic.settings.extensions[ 'periodicjs.ext.cron_service' ];
+  console.log({ periodicInitStatus, cronExtensionSettings, });
+  if (cronExtensionSettings.use_sockets_on_all_threads) {
     await periodicInitServers.startSocketIOserver.call(periodic);
   }
   // use_sockets_on_all_threads
@@ -146,6 +116,46 @@ async function main() {
   periodicContainerSettings = periodic.settings.container;
   CONTAINER_NAME = periodicContainerSettings.name;
   settings = periodicContainerSettings[ CONTAINER_NAME ];
+
+  computeQueue = async.queue(function queueFunction({ task, }, callback) {
+    const { type, name, options, } = task;
+    // console.log({ task });
+    process.send({
+      event: 'compute-log', 
+      payload:{
+        message: `Adding to computation Queue: ${type}`,
+        meta: {
+          task,
+          clientlog: true,
+        },
+        status:getQueueStatus(),
+      },
+    });
+    try {
+      periodic.locals.container.get(CONTAINER_NAME).crons[ name ].call(mockThis, options)
+        .then(result => {
+          callback(null, result);
+        })
+        .catch(callback);
+    } catch (e) {
+      callback(e);
+    }
+  }, cronExtensionSettings.multi_thread_max_concurrent_jobs_on_thread || 2);
+    
+  computeQueue.drain = function queueDrain() {
+    process.send({
+      event: 'compute-log',
+      payload: {
+        message: 'All queue computations have been processed',
+        meta: {
+          clientlog: true,
+        },
+        status:getQueueStatus(),
+      },
+    });
+  };
+
+
   process.send({
     event: 'compute-log', 
     payload:{

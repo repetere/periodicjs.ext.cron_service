@@ -2,6 +2,7 @@
 const periodic = require('periodicjs');
 const mongoose = require('mongoose');
 const capitalize = require('capitalize');
+const Promisie = require('promisie');
 const oauth2server = periodic.controllers.extension.get('periodicjs.ext.oauth2server');
 const routeUtils = periodic.utilities.routing;
 const periodicContainerSettings = periodic.settings.container;
@@ -152,11 +153,21 @@ async function runScript({ script, req, }) {
 }
 
 async function queueOnNewProcess({ type, name, options = {}, req = {}, script, priority, forkName = 'crons', }) {
-  // console.log({ type, name, options, req, script, priority, forkName, })
-  const forkedProcesses = periodic.locals.extensions.get('periodicjs.ext.cron_service').queue.forkedProcesses;
-  const forked = forkedProcesses.get(forkName);
+  // console.log({ type, name, options, req, script, priority, forkName, }, arguments);
+  const forkQueue = periodic.locals.extensions.get('periodicjs.ext.cron_service').queue;
+  const forkedProcesses = forkQueue.forkedProcesses;
+  let forked = forkedProcesses.get(forkName);
+  if (forkedProcesses.size > 1) {
+    const forkedProcessNames = Array.from(forkedProcesses.keys());
+    const forkStatuses = await Promisie.map(forkedProcessNames, forkedProcessNames.length, async (forkName) => { 
+      return await forkQueue.getQueueStatus({ forkName });
+    });
+    const sortedPriorityForks = forkStatuses.sort((a, b) => a.running - b.running);
+    const priorityForkedStatusName = sortedPriorityForks[ 0 ].THREAD_FORK_NAME;
+    forked = forkedProcesses.get(priorityForkedStatusName);
+  }
 
-  if (periodic.settings.extensions[ 'periodicjs.ext.cron_service' ].multi_thread_crons!==true || !forked) {
+  if (periodic.settings.extensions[ 'periodicjs.ext.cron_service' ].multi_thread_crons !== true || !forked) {
     options.req = req;
     options.script = script;
     return periodic.locals.container.get(CONTAINER_NAME).crons[ name ].call(mockThis, options);

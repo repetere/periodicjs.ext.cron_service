@@ -40,7 +40,14 @@ async function createFork({ name='crons', }) {
   // console.log({ isForked, });
   if (isComputeForked !== true) {
     // console.log('CREATING FORK',periodic.config);
-    const forked = fork(path.join(__dirname, 'compute.js'), [ `--e ${periodic.config.process.runtime}`, ], { env: { NODE_ENV: periodic.config.process.runtime, }, });
+    const forked = fork(path.join(__dirname, 'compute.js'), [ `--e ${periodic.config.process.runtime}`, ], {
+      env: {
+        NODE_ENV: periodic.config.process.runtime,
+        USE_SLACK: process.env.USE_SLACK,
+        THREAD_FORK_NAME: name,
+        MASTER_THREAD_PID: process.pid.toString(),
+      },
+    });
     forked.on('message', msg => {
       
       const socketIOServer = periodic.servers.get('socket.io') || {};
@@ -48,7 +55,7 @@ async function createFork({ name='crons', }) {
       const io = socketServer;
       
       const { event, payload = {}, } = msg;
-      const { message, meta, status, level = 'silly', } = payload;
+      const { message, meta, status, level = 'verbose', } = payload;
       switch (event) {
       case 'compute-log':
         meta.status = status;

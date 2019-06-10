@@ -1,5 +1,5 @@
 'use strict';
-
+const os = require('os');
 const periodic = require('periodicjs');
 const utilities = require('./utilities');
 const logger = periodic.logger;
@@ -29,7 +29,16 @@ module.exports = () => {
     }
   });
   if (extensionSettings.multi_thread_crons) {
-    utilities.queue.createFork({ name: 'crons', });
+    let numWorkers = extensionSettings.multi_thread_number_of_threads;
+    if (extensionSettings.multi_thread_use_maximum_threads) {
+      const cpuThreads = os.cpus().length - 1;
+      numWorkers = cpuThreads > 1 ? cpuThreads : numWorkers;
+    }
+    if (numWorkers > 1) {
+      for (let i = 0; i < numWorkers; i++){
+        utilities.queue.createFork({ name: `crons_${i}`, });
+      }
+    } else utilities.queue.createFork({ name: 'crons', });
   }
 
   return Promise.resolve(true);
