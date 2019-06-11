@@ -414,7 +414,11 @@ function digestCronDocument(options) {
 function findCronsForInitialization(options) {
   return new Promise((resolve, reject) => {
     try {
-      if (periodic.settings.extensions[ 'periodicjs.ext.cron_service' ].cronCheckFileEnabled && fs.existsSync(periodic.settings.extensions[ 'periodicjs.ext.cron_service' ].filePaths.useCronCheckFile) === false) {
+      const isForked = typeof process.send === 'function' || process.env.FORKED_CRON_PROCESS;
+      if (isForked) { 
+        periodic.logger.debug('Skipping crons because of cron on forked process');
+        return resolve([]);
+      } else if (periodic.settings.extensions[ 'periodicjs.ext.cron_service' ].cronCheckFileEnabled && fs.existsSync(periodic.settings.extensions[ 'periodicjs.ext.cron_service' ].filePaths.useCronCheckFile) === false) {
         periodic.logger.debug('Skipping crons because of cron file check');
         return resolve([]);
       }

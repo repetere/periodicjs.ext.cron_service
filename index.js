@@ -29,17 +29,22 @@ module.exports = () => {
     }
   });
   if (extensionSettings.multi_thread_crons) {
-    let numWorkers = extensionSettings.multi_thread_number_of_threads;
-    if (extensionSettings.multi_thread_use_maximum_threads) {
-      const cpuThreads = os.cpus().length - 1;
-      numWorkers = cpuThreads > 1 ? cpuThreads : numWorkers;
-    }
-    if (numWorkers > 1) {
-      for (let i = 0; i < numWorkers; i++){
-        utilities.queue.createFork({ name: `crons_${i}`, });
+    let numWorkers = extensionSettings.multi_thread_number_of_threads || extensionSettings.mutli_thread_process_names.length;
+    if (extensionSettings.mutli_thread_process_names.length) {
+      extensionSettings.mutli_thread_process_names.forEach(name => {
+        utilities.queue.createFork({ name, });
+      });
+    } else {
+      if (extensionSettings.multi_thread_use_maximum_threads) {
+        const cpuThreads = os.cpus().length - 1;
+        numWorkers = cpuThreads > 1 ? cpuThreads : numWorkers;
       }
-    } else utilities.queue.createFork({ name: 'crons', });
+      if (numWorkers > 1) {
+        for (let i = 0; i < numWorkers; i++){
+          utilities.queue.createFork({ name: `crons_${i}`, });
+        }
+      } else utilities.queue.createFork({ name: 'crons', });
+    }
   }
-
   return Promise.resolve(true);
 };

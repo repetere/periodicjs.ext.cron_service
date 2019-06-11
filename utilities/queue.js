@@ -44,6 +44,7 @@ async function createFork({ name='crons', }) {
       env: {
         NODE_ENV: periodic.config.process.runtime,
         USE_SLACK: process.env.USE_SLACK,
+        FORKED_CRON_PROCESS: true,
         THREAD_FORK_NAME: name,
         MASTER_THREAD_PID: process.pid.toString(),
       },
