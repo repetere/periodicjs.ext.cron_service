@@ -106,7 +106,7 @@ if (isForked) {
 async function main() {
   const periodicInitStatus = await periodic.init({ debug: true, cli: true, computeForked: true, });
   const cronExtensionSettings = periodic.settings.extensions[ 'periodicjs.ext.cron_service' ];
-  console.log({ periodicInitStatus, cronExtensionSettings, });
+  // console.log({ periodicInitStatus, cronExtensionSettings, });
   if (cronExtensionSettings.use_sockets_on_all_threads) {
     await periodicInitServers.startSocketIOserver.call(periodic);
   }
