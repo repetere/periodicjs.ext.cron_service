@@ -1,6 +1,7 @@
 'use strict';
 const os = require('os');
 const periodic = require('periodicjs');
+const Promisie = require('promisie');
 const utilities = require('./utilities');
 const logger = periodic.logger;
 const extensionSettings = periodic.settings.extensions[ 'periodicjs.ext.cron_service' ];
@@ -31,8 +32,8 @@ module.exports = () => {
   if (extensionSettings.multi_thread_crons) {
     let numWorkers = extensionSettings.multi_thread_number_of_threads || extensionSettings.mutli_thread_process_names.length;
     if (extensionSettings.mutli_thread_process_names.length) {
-      extensionSettings.mutli_thread_process_names.forEach(name => {
-        utilities.queue.createFork({ name, });
+      Promisie.each(extensionSettings.mutli_thread_process_names, 1, async (name) => {
+        return await utilities.queue.createFork({ name, });
       });
     } else {
       if (extensionSettings.multi_thread_use_maximum_threads) {
@@ -40,9 +41,12 @@ module.exports = () => {
         numWorkers = cpuThreads > 1 ? cpuThreads : numWorkers;
       }
       if (numWorkers > 1) {
-        for (let i = 0; i < numWorkers; i++){
-          utilities.queue.createFork({ name: `crons_${i}`, });
-        }
+        let i = 0; 
+        Promisie.each(numWorkers, 1, async () => {
+          const launched = await utilities.queue.createFork({ name: `crons_${i}`, });
+          i++;
+          return launched;
+        })
       } else utilities.queue.createFork({ name: 'crons', });
     }
   }

@@ -36,11 +36,16 @@ async function getQueueStatus({ forkName = 'crons',  }) {
   });
 }
 
+
 async function createFork({ name='crons', }) {
   // console.log({ isForked, });
   if (isComputeForked !== true) {
+    let execArgv;
     // console.log('CREATING FORK',periodic.config);
-    const forked = fork(path.join(__dirname, 'compute.js'), [ `--e ${periodic.config.process.runtime}`, ], {
+    // execArgv = [ '--inspect=9' + String(Math.random()).substr(-3) ];
+
+    const forked = fork(path.join(__dirname, 'compute.js'), [ `--e ${periodic.config.process.runtime}`, '--inspect-brk' ], {
+      execArgv,
       env: {
         NODE_ENV: periodic.config.process.runtime,
         USE_SLACK: process.env.USE_SLACK,
@@ -69,6 +74,18 @@ async function createFork({ name='crons', }) {
       // console.log('message from child', { msg, });
     });
     // forked.send({ hello: 'world', });
+    forked.on('close', closedData => {
+      periodic.logger.error('forked close event: ' + name, closedData);
+    });
+    forked.on('disconnect', disconnectData => {
+      periodic.logger.error('forked disconnect event: ' + name, disconnectData);
+    });
+    forked.on('error', errorData => {
+      periodic.logger.error('forked error event: ' + name, errorData);
+    });
+    forked.on('exit', exitData => {
+      periodic.logger.error('forked exit event: ' + name, exitData);
+    });
     forkedProcesses.set(name, forked);
     return forked;
   }
