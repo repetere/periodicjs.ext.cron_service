@@ -3,7 +3,11 @@ const GLOBAL_PROMISE = Promise;
 require('newrelic');
 Promise = GLOBAL_PROMISE;
 const periodic = require('periodicjs');
+const prettysize = require('prettysize');
 const periodicInitServers = require('periodicjs/lib/init/server');
+const memwatch = require('node-memwatch');
+let memoryStatistics;
+
 const isForked = typeof process.send === 'function';
 const isComputeForked = periodic.config.computeForked;
 let periodicContainerSettings;
@@ -26,10 +30,33 @@ const mockThis = {
 //   isComputeForked,
 // });
 
+memwatch.on('stats', (stats) => {
+  [ "estimated_base",
+    "current_base",
+    "min",
+    "max",
+  ].forEach(prop => {
+      stats[ prop ] = prettysize(stats[ prop ]);
+    });
+  memoryStatistics = stats;  
+});
 
 
 function getQueueStatus() {
-  const workers = computeQueue.workersList();
+  let workers=[];
+  if (computeQueue && computeQueue.workersList) {
+    workers = computeQueue.workersList();
+  } else {
+    computeQueue = {
+      length() { return undefined; },
+      running() { return undefined; },
+      idle() { return undefined; }
+    }
+  }
+  const memoryUsage = process.memoryUsage();
+  for (let key in memoryUsage) {
+    memoryUsage[ key ] = prettysize(memoryUsage[ key ]);
+  }
   return {
     length: computeQueue.length(),
     started: computeQueue.started,
@@ -39,8 +66,10 @@ function getQueueStatus() {
     idle: computeQueue.idle(),
     saturated: computeQueue.saturated,
     concurrency: computeQueue.concurrency,
-    tasks,
     THREAD_FORK_NAME, MASTER_THREAD_PID, THREAD_PID,
+    memoryUsage,
+    memoryStatistics,
+    tasks,
   };
 }
 
@@ -104,67 +133,96 @@ if (isForked) {
 }
 
 async function main() {
-  const periodicInitStatus = await periodic.init({ debug: true, cli: true, computeForked: true, });
-  const cronExtensionSettings = periodic.settings.extensions[ 'periodicjs.ext.cron_service' ];
-  // console.log({ periodicInitStatus, cronExtensionSettings, });
-  if (cronExtensionSettings.use_sockets_on_all_threads) {
-    await periodicInitServers.startSocketIOserver.call(periodic);
-  }
-  // use_sockets_on_all_threads
+  try { 
+    const periodicInitStatus = await periodic.init({ debug: true, cli: true, computeForked: true, });
+    const cronExtensionSettings = periodic.settings.extensions[ 'periodicjs.ext.cron_service' ];
+    // console.log({ periodicInitStatus, cronExtensionSettings, });
+    if (cronExtensionSettings.use_sockets_on_all_threads) {
+      await periodicInitServers.startSocketIOserver.call(periodic);
+    }
+    // use_sockets_on_all_threads
 
 
-  periodicContainerSettings = periodic.settings.container;
-  CONTAINER_NAME = periodicContainerSettings.name;
-  settings = periodicContainerSettings[ CONTAINER_NAME ];
+    periodicContainerSettings = periodic.settings.container;
+    CONTAINER_NAME = periodicContainerSettings.name;
+    settings = periodicContainerSettings[ CONTAINER_NAME ];
 
-  computeQueue = async.queue(function queueFunction({ task, }, callback) {
-    const { type, name, options, } = task;
-    // console.log({ task });
+    computeQueue = async.queue(function queueFunction({ task, }, callback) {
+      const { type, name, options, } = task;
+      // console.log({ task });
+      process.send({
+        event: 'compute-log', 
+        payload:{
+          message: `Adding to computation Queue: ${type}`,
+          meta: {
+            task,
+            clientlog: true,
+          },
+          status:getQueueStatus(),
+        },
+      });
+      try {
+        periodic.locals.container.get(CONTAINER_NAME).crons[ name ].call(mockThis, options)
+          .then(result => {
+            callback(null, result);
+          })
+          .catch(callback);
+      } catch (e) {
+        callback(e);
+      }
+    }, cronExtensionSettings.multi_thread_max_concurrent_jobs_on_thread || 2);
+      
+    computeQueue.drain = function queueDrain() {
+      process.send({
+        event: 'compute-log',
+        payload: {
+          message: 'All queue computations have been processed',
+          meta: {
+            clientlog: true,
+          },
+          status:getQueueStatus(),
+        },
+      });
+    };
+
     process.send({
       event: 'compute-log', 
       payload:{
-        message: `Adding to computation Queue: ${type}`,
+        message: 'Forked Process Queue Ready',
         meta: {
-          task,
           clientlog: true,
         },
-        status:getQueueStatus(),
+        status: getQueueStatus(),
       },
     });
-    try {
-      periodic.locals.container.get(CONTAINER_NAME).crons[ name ].call(mockThis, options)
-        .then(result => {
-          callback(null, result);
-        })
-        .catch(callback);
-    } catch (e) {
-      callback(e);
-    }
-  }, cronExtensionSettings.multi_thread_max_concurrent_jobs_on_thread || 2);
-    
-  computeQueue.drain = function queueDrain() {
+    memwatch.on('leak', (leakInfo) => { 
+      process.send({
+        event: 'compute-log', 
+        payload: {
+          level:'error',
+          message: 'Memory Leak Detected',
+          meta: {
+            clientlog: true,
+            leakInfo,
+          },
+          status: getQueueStatus(),
+        },
+      });
+    });
+  } catch (e) {
+    console.error(e);
     process.send({
-      event: 'compute-log',
+      event: 'compute-log', 
       payload: {
-        message: 'All queue computations have been processed',
+        level:'error',
+        message: 'Error launching process fork',
         meta: {
           clientlog: true,
         },
-        status:getQueueStatus(),
+        status: getQueueStatus(),
       },
     });
-  };
-
-
-  process.send({
-    event: 'compute-log', 
-    payload:{
-      message: 'Forked Process Queue Ready',
-      meta: {
-        clientlog: true,
-      },
-      status: getQueueStatus(),
-    },
-  });
+    process.exit(0);
+  }
 }
 main();

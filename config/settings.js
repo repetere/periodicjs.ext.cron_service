@@ -13,6 +13,7 @@ module.exports = {
     multi_thread_number_of_threads: 1,
     mutli_thread_process_names:[], //defaults to crons_0, crons_1, ... crons_n
     multi_thread_max_concurrent_jobs_on_thread: 3,
+    multi_thread_max_retry_process_open: 3,
     use_sockets_on_all_threads: true,
     use_automation: false,
     refresh_crons: false,

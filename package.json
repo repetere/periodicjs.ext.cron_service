@@ -32,7 +32,9 @@
     "later": "^1.2.0",
     "luxon": "^1.4.3",
     "minimist": "^1.2.0",
+    "node-memwatch": "^1.0.1",
     "prettycron": "^0.10.0",
+    "prettysize": "^2.0.0",
     "util-extend": "^1.0.3"
   },
   "deprecated": false,
@@ -87,5 +89,5 @@
     "postuninstall": "cd ../../ && periodicjs rex periodicjs.ext.cron_service",
     "test": "mocha -R spec --recursive"
   },
-  "version": "9.3.1"
+  "version": "9.5.0"
 }
