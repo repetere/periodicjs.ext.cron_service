@@ -4,6 +4,7 @@ require('newrelic');
 Promise = GLOBAL_PROMISE;
 const periodic = require('periodicjs');
 const prettysize = require('prettysize');
+const v8 = require('v8');
 const periodicInitServers = require('periodicjs/lib/init/server');
 const memwatch = require('node-memwatch');
 let memoryStatistics;
@@ -54,8 +55,12 @@ function getQueueStatus() {
     }
   }
   const memoryUsage = process.memoryUsage();
+  const heapStatistics = v8.getHeapStatistics();
   for (let key in memoryUsage) {
     memoryUsage[ key ] = prettysize(memoryUsage[ key ]);
+  }
+  for (let key in heapStatistics) {
+    heapStatistics[ key ] = prettysize(heapStatistics[ key ]);
   }
   return {
     length: computeQueue.length(),
@@ -69,6 +74,7 @@ function getQueueStatus() {
     THREAD_FORK_NAME, MASTER_THREAD_PID, THREAD_PID,
     memoryUsage,
     memoryStatistics,
+    heapStatistics,
     tasks,
   };
 }
