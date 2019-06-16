@@ -94,7 +94,10 @@ async function createFork({ name = 'crons', retry = true, }) {
     // console.log('CREATING FORK',periodic.config);
     // execArgv = [ '--inspect=9' + String(Math.random()).substr(-3) ];
 
-    const forked = fork(path.join(__dirname, 'compute.js'), [ `--e ${periodic.config.process.runtime}`, '--inspect-brk' ], {
+    const forked = fork(path.join(__dirname, 'compute.js'), [
+      `--e ${periodic.config.process.runtime}`,
+      // '--inspect-brk'
+    ], {
       execArgv,
       env: {
         NODE_ENV: periodic.config.process.runtime,
