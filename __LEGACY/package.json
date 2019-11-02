@@ -84,7 +84,7 @@
     "mocha-lcov-reporter": "^1.2.0",
     "promisie": "^1.6.1",
     "proxy-polyfill": "0.1.6",
-    "superagent": "^1.2.0",
+    "superagent": "^5.1.0",
     "test-periodicjs": "^8.30.50",
     "uglify-js": "^2.4.15",
     "uglifyify": "^2.5.0"
